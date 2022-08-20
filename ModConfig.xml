@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xml>
+	<ModConfig>
+		<Dependency value="ModFoo" />
+		<Dependency value="ModBar" />
+		<Config name="SCore" value="Fire"/>
+		<Config name="SCore" value="Base"/>
+	</ModConfig>
+</xml>
