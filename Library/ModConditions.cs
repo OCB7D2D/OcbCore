@@ -23,7 +23,7 @@ class ModConditions
         else if (condition.StartsWith("HasConfig(") && condition.EndsWith(")"))
         {
             OCBNET.ModConfigs mods = OCBNET.ModConfigs.Instance;
-            var conditions = condition.Substring(10, condition.Length - 11).Split(',');
+            var conditions = condition.Substring(10, condition.Length - 11).Split(';');
             if (conditions.Length > 1)
             {
                 if (mods.GetConfigs(conditions[0]) is List<string> configs)

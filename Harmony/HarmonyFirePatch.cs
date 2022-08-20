@@ -3,11 +3,11 @@ using OCBNET;
 
 class HarmonyFirePatch
 {
-    [HarmonyCondition("HasConfig(SCore,Fire)")]
-    [HarmonyCondition("HasConfig(SCore,Base)")]
+    [HarmonyCondition("HasConfig(SCore;Fire)")]
+    [HarmonyCondition("HasConfig(SCore;Base)")]
     [HarmonyPatch(typeof(EntityPlayerLocal))]
     [HarmonyPatch("Update")]
-    public class EntityBuffs_SetCustomVar
+    public class EntityPlayerLocalUpdate
     {
         static void Prefix()
         {

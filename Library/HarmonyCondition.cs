@@ -18,25 +18,7 @@ namespace OCBNET
         public bool Evaluate()
         {
             if (Condition == null) return false;
-            if (Condition.StartsWith("HasConfig(") && Condition.EndsWith(")"))
-            {
-                OCBNET.ModConfigs mods = OCBNET.ModConfigs.Instance;
-                var conditions = Condition.Substring(10, Condition.Length - 11).Split(',');
-                if (conditions.Length > 1)
-                {
-                    if (mods.GetConfigs(conditions[0]) is List<string> configs)
-                    {
-                        for (int i = 1; i < conditions.Length; i += 1)
-                        {
-                            if (!configs.Contains(conditions[i])) return false;
-                        }
-                        return true;
-                    }
-                    return false;
-                }
-            }
-            Log.Error("Harmony condition invalid {0}", Condition);
-            return false;
+            return ModConditions.Evaluate(Condition);
         }
 
         // Helper function to apply patches with conditions applied

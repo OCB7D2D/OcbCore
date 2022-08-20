@@ -146,8 +146,7 @@ namespace OCBNET
 
         private void AddConfig(string name, string value)
         {
-            List<string> configs = null;
-            if (!Configs.TryGetValue(name, out configs))
+            if (!Configs.TryGetValue(name, out List<string> configs))
             {
                 configs = new List<string>();
                 Configs.Add(name, configs);
@@ -157,8 +156,7 @@ namespace OCBNET
 
         private void AddDependency(Mod mod, string value)
         {
-            List<string> deps = null;
-            if (!Dependecies.TryGetValue(mod.ModInfo.Name.Value, out deps))
+            if (!Dependecies.TryGetValue(mod.ModInfo.Name.Value, out List<string> deps))
             {
                 deps = new List<string>();
                 Dependecies.Add(mod.ModInfo.Name.Value, deps);

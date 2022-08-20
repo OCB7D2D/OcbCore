@@ -74,8 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Harmony\AssemblyInfo.cs" />
-    <Compile Include="Harmony\GuppyTest.cs" />
-    <Compile Include="Harmony\HarmonyFire.cs" />
+    <Compile Include="Harmony\HarmonyFirePatch.cs" />
     <Compile Include="Harmony\OcbCore.cs" />
     <Compile Include="Library\HarmonyCondition.cs" />
     <Compile Include="Library\HarmonySerializer.cs" />
