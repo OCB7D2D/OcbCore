@@ -189,7 +189,7 @@ namespace OCBNET
             deps.Add(value);
         }
 
-        private bool HasDependency(string mod, string dep)
+        public bool HasDependency(string mod, string dep)
         {
             if (!Dependecies.TryGetValue(mod,
                 out HashSetList<string> deps)) return false;
@@ -201,7 +201,7 @@ namespace OCBNET
             return false;
         }
 
-        private bool HasDependency(Mod mod, Mod dep)
+        public bool HasDependency(Mod mod, Mod dep)
         {
             return HasDependency(
                 mod.ModInfo.Name.Value,

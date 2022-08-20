@@ -84,6 +84,7 @@
     <Compile Include="Harmony\HarmonyFirePatch.cs" />
     <Compile Include="Harmony\OcbCore.cs" />
     <Compile Include="Library\HarmonyCondition.cs" />
+    <Compile Include="Library\HarmonyFieldProxy.cs" />
     <Compile Include="Library\HarmonySerializer.cs" />
     <Compile Include="Library\ModConditions.cs" />
     <Compile Include="Library\ModConfigs.cs" />

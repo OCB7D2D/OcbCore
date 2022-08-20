@@ -21,10 +21,14 @@ namespace OCBNET
             return ModConditions.Evaluate(Condition);
         }
 
-        // Helper function to apply patches with conditions applied
         public static void PatchAll(Assembly assembly)
         {
-            Harmony harmony = new Harmony($"harmony-auto-{Guid.NewGuid()}");
+            PatchAll(new Harmony($"harmony-auto-{Guid.NewGuid()}"), assembly);
+        }
+
+        // Helper function to apply patches with conditions applied
+        public static void PatchAll(Harmony harmony, Assembly assembly)
+        {
             Type[] types = AccessTools.GetTypesFromAssembly(assembly);
             foreach (Type type in types)
             {
