@@ -1,4 +1,5 @@
 ﻿using ICSharpCode.WpfDesign.XamlDom;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
@@ -8,15 +9,20 @@ namespace OCBNET
     public class ModConfigs : SingletonInstance<ModConfigs>
     {
 
-        Dictionary<string, List<string>> Dependecies;
+        Dictionary<string, HashSetList<string>> Dependecies;
 
-        Dictionary<string, List<string>> Configs;
+        Dictionary<string, HashSetList<string>> Configs;
+
+        bool DebugLoadOrder = true;
+
+        public List<Mod> LoadOrder;
 
         public ModConfigs()
         {
-            Dependecies = new Dictionary<string, List<string>>();
-            Configs = new Dictionary<string, List<string>>();
-            foreach (var mod in ModManager.GetLoadedMods())
+            Dependecies = new Dictionary<string, HashSetList<string>>();
+            Configs = new Dictionary<string, HashSetList<string>>();
+            LoadOrder = new List<Mod>(ModManager.GetLoadedMods());
+            foreach (var mod in LoadOrder)
             {
                 try
                 {
@@ -59,6 +65,19 @@ namespace OCBNET
                 //    Log.Out("Got IO Execption {0}", ex.GetType().Name);
                 //}
             }
+            // Re-sort for load order
+            LoadOrder.Sort(delegate (Mod a, Mod b) {
+                return HasDependency(b, a) ? -1 : 1;
+            });
+            // Enable debug for now to check it if needed
+            if (DebugLoadOrder)
+            {
+                Log.Out("Load XML in the following order:");
+                foreach (Mod mod in LoadOrder)
+                {
+                    Log.Out("  {0}", mod.ModInfo.Name.Value);
+                }
+            }
         }
 
         private void ParseModConfig(Mod mod, PositionXmlElement node)
@@ -70,13 +89,20 @@ namespace OCBNET
                     case XmlNodeType.Element:
                         switch (child.Name)
                         {
-                            case "Dependency":
+                            case "Require":
+                            case "After":
                                 foreach (XmlAttribute attr in child.Attributes)
                                 {
-                                    if (attr.Name != "value")
+                                    if (attr.Name != "mod")
                                     {
                                         Log.Warning(string.Format("Unknown attribute found: {0} (file {1}, line {2})",
                                             child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                                    }
+                                    else if (child.Name == "Require" && ModManager.GetMod(attr.Value) == null)
+                                    {
+                                        Log.Error("Required mod {0} for {1} not loaded",
+                                            attr.Value, mod.ModInfo.Name.Value);
+                                        // throw new Exception("Required mod not loaded");
                                     }
                                     else
                                     {
@@ -144,52 +170,92 @@ namespace OCBNET
             }
         }
 
-        private void AddConfig(string name, string value)
-        {
-            if (!Configs.TryGetValue(name, out List<string> configs))
-            {
-                configs = new List<string>();
-                Configs.Add(name, configs);
-            }
-            configs.Add(value);
-        }
-
         private void AddDependency(Mod mod, string value)
         {
-            if (!Dependecies.TryGetValue(mod.ModInfo.Name.Value, out List<string> deps))
+            string name = mod.ModInfo.Name.Value;
+            if (!Dependecies.TryGetValue(name, out HashSetList<string> deps))
             {
-                deps = new List<string>();
-                Dependecies.Add(mod.ModInfo.Name.Value, deps);
+                deps = new HashSetList<string>();
+                Dependecies.Add(name, deps);
             }
+            // Check for circular dependency
+            if (HasDependency(value, name))
+            {
+                Log.Error("Circular Mod Dependency detected");
+                Log.Error(" {0} => {1} => {0}", name, value);
+                throw new ArgumentException("Circular Mod Dependency");
+            }
+            Log.Out("Mod {0} requires {1}", name, value);
             deps.Add(value);
         }
 
-        public List<string> GetDependencies(string mod)
+        private bool HasDependency(string mod, string dep)
+        {
+            if (!Dependecies.TryGetValue(mod,
+                out HashSetList<string> deps)) return false;
+            foreach (string dependency in deps.hashSet)
+            {
+                if (dependency == dep) return true;
+                if (HasDependency(dependency, dep)) return true;
+            }
+            return false;
+        }
+
+        private bool HasDependency(Mod mod, Mod dep)
+        {
+            return HasDependency(
+                mod.ModInfo.Name.Value,
+                dep.ModInfo.Name.Value);
+        }
+
+        public HashSetList<string> GetDependencies(string mod)
         {
             return Dependecies.TryGetValue(mod,
                 out var deps) ? deps : null;
         }
 
-        public List<string> GetConfigs(string mod)
+        public List<string> GetModsWithDependency(string mod, string dep = null)
         {
-            return Configs.TryGetValue(mod,
+            return null;
+        }
+
+        private void AddConfig(string name, string value)
+        {
+            if (!Configs.TryGetValue(name, out HashSetList<string> configs))
+            {
+                configs = new HashSetList<string>();
+                Configs.Add(name, configs);
+            }
+            configs.Add(value);
+        }
+
+        public HashSetList<string> GetConfigs(string name)
+        {
+            return Configs.TryGetValue(name,
                 out var configs) ? configs : null;
         }
 
-        public string GetLastConfig(string mod)
+        public string GetLastConfig(string name)
         {
-            var configs = GetConfigs(mod);
+            var configs = GetConfigs(name);
             if (configs == null) return null;
-            if (configs.Count == 0) return null;
-            return configs[configs.Count - 1];
+            if (configs.list.Count == 0) return null;
+            return configs.list[configs.list.Count - 1];
         }
 
-        public string GetFirstConfig(string mod)
+        public string GetFirstConfig(string name)
         {
-            var configs = GetConfigs(mod);
+            var configs = GetConfigs(name);
             if (configs == null) return null;
-            if (configs.Count == 0) return null;
-            return configs[0];
+            if (configs.list.Count == 0) return null;
+            return configs.list[0];
+        }
+
+        public bool HasConfig(string name, string value)
+        {
+            if (GetConfigs(name) is HashSetList<string> configs)
+                return configs.hashSet.Contains(value);
+            return false;
         }
 
     }

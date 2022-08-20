@@ -13,4 +13,8 @@ public class SingletonInstance<T> : object where T : new()
             return instance;
         }
     }
+    public static bool HasInstance()
+    {
+        return instance != null;
+    }
 }

@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 class ModConditions
 {
@@ -26,11 +23,11 @@ class ModConditions
             var conditions = condition.Substring(10, condition.Length - 11).Split(';');
             if (conditions.Length > 1)
             {
-                if (mods.GetConfigs(conditions[0]) is List<string> configs)
+                if (mods.GetConfigs(conditions[0]) is HashSetList<string> configs)
                 {
                     for (int i = 1; i < conditions.Length; i += 1)
                     {
-                        if (!configs.Contains(conditions[i])) return false;
+                        if (!configs.hashSet.Contains(conditions[i])) return false;
                     }
                     return true;
                 }
