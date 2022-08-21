@@ -1,0 +1,5 @@
+<configs patcher-version="2">
+	<modif condition="HasAnyConfig(UserSetting)">
+		<include path="windows.a20.xml"/>
+	</modif>
+</configs>

@@ -38,6 +38,23 @@ class ModConditions
             // We don't cache anything
             return callback();
         }
+        else if (condition.StartsWith("HasAnyConfig(") && condition.EndsWith(")"))
+        {
+            OCBNET.ModConfigs mods = OCBNET.ModConfigs.Instance;
+            var conditions = condition.Substring(13, condition.Length - 14).Split(';');
+            if (conditions.Length > 0)
+            {
+                for (int i = 0; i < conditions.Length; i += 1)
+                {
+                    if (mods.GetConfigs(conditions[i]) is HashSetList<string> configs)
+                    {
+                        if (configs.hashSet.Count > 0) return true;
+                    }
+                }
+            }
+            return false;
+
+        }
         else if (condition.StartsWith("HasConfig(") && condition.EndsWith(")"))
         {
             OCBNET.ModConfigs mods = OCBNET.ModConfigs.Instance;
@@ -54,7 +71,6 @@ class ModConditions
                 }
             }
             return false;
-
         }
         // Otherwise check if a mod with that name exists
         // ToDo: maybe do something with ModInfo.version?

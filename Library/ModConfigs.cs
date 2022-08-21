@@ -29,10 +29,10 @@ namespace OCBNET
 {
     public class ModConfigs : SingletonInstance<ModConfigs>
     {
+        readonly Dictionary<string, HashSetList<string>> Dependecies;
 
-        Dictionary<string, HashSetList<string>> Dependecies;
-
-        Dictionary<string, HashSetList<string>> Configs;
+        // ToDo: config is loaded in original order
+        readonly Dictionary<string, HashSetList<string>> Configs;
 
         bool DebugLoadOrder = true;
 
@@ -200,7 +200,7 @@ namespace OCBNET
                 Dependecies.Add(name, deps);
             }
             // Check for circular dependency
-            if (HasDependency(value, name))
+            if (name == value || HasDependency(value, name))
             {
                 Log.Error("Circular Mod Dependency detected");
                 Log.Error(" {0} => {1} => {0}", name, value);

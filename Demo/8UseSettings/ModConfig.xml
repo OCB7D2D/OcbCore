@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xml>
+	<ModConfig>
+		<Require mod="CustomSettings" />
+		<Config name="UserSetting" value="name=MySettingA;type=bool;label=uiMySettingA" />
+		<Config name="UserSetting" value="name=MySettingB;type=bool;label=uiMySettingB" />
+	</ModConfig>
+</xml>

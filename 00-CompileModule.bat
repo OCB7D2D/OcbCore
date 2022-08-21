@@ -17,4 +17,12 @@ cd Demo\3ModBaz
 call 00-CompileModule.bat
 cd ..\..
 
+cd Demo\8UseSettings
+call 00-CompileModule.bat
+cd ..\..
+
+cd Demo\9CustomSettings
+call 00-CompileModule.bat
+cd ..\..
+
 pause

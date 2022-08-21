@@ -25,6 +25,10 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Xml;
+using OCBNET;
+using System.Text.RegularExpressions;
+using System.Collections;
+using System.Collections.Generic;
 
 static class ModXmlPatcher
 {
@@ -114,6 +118,25 @@ static class ModXmlPatcher
     // Flags for consecutive mod-if parsing
     private static bool IfClauseParsed = false;
     private static bool PreviousResult = false;
+
+    public static string EvaluateTemplate(Match match, int i, Dictionary<string, string> cfg)
+    {
+        if (match.Groups.Count < 2) return match.Value;
+        Log.Out("Match {0}", match.Groups[1].Value);
+        string str = match.Groups[1].Value.Trim();
+        if (str.StartsWith("Mul(") && str.EndsWith(")"))
+        {
+            int multiplier = int.Parse(str.Substring(4, str.Length - 5));
+            Log.Out("Returning {0}", (multiplier * i).ToString());
+            return (multiplier * i).ToString();
+        }
+        else if (str.StartsWith("Val(") && str.EndsWith(")"))
+        {
+            string name = str.Substring(4, str.Length - 5);
+            if (cfg.TryGetValue(name, out string value)) return value;
+        }
+        return match.Value;
+    }
 
     // Entry point instead of (private) `XmlPatcher.singlePatch`
     // Implements conditional patching and also allows includes
@@ -205,6 +228,74 @@ static class ModXmlPatcher
                 return PatchXml(_xmlFile, _patchXml,
                     _patchElement, _patchName);
 
+            case "foreach":
+
+                string template = "<xml>";
+
+                // Check if we have true conditions
+                foreach (var node in _patchElement.ChildNodes)
+                {
+                    if (node is XmlCDataSection data)
+                    {
+                        if (!string.IsNullOrEmpty(template))
+                            template += " "; // Add space between
+                        template += data.InnerText;
+                    }
+                    else
+                    {
+                        Log.Error("foreach must only contain CDATA nodes", node);
+                    }
+                }
+
+                string ConfigName = null;
+
+                // Check if we have true conditions
+                foreach (XmlAttribute attr in _patchElement.Attributes)
+                {
+                    // Ignore unknown attributes for now
+                    if (attr.Name == "config")
+                    {
+                        ConfigName = attr.Value;
+                    }
+                }
+
+                if (ConfigName == null)
+                {
+                    Log.Error("Foreach must name a config");
+                    return false;
+                }
+
+                var cfgs = ModConfigs.Instance.GetConfigs(ConfigName);
+
+                if (cfgs == null)
+                {
+                    return true;
+                }
+
+                template += "</xml>";
+
+                string pattern = @"{{([^\}]+)}}";
+                bool rv = true;
+
+                for (int it = 0; it < cfgs.list.Count; it++)
+                {
+                    string qwe = cfgs.list[it];
+                    var cfg = ParseKeyValueList(cfgs.list[it]);
+                    var evaluated = Regex.Replace(template, pattern,
+                            match => EvaluateTemplate(match, it, cfg));
+                    XmlFile xml = new XmlFile(
+                        evaluated,
+                        _xmlFile.Directory,
+                        _xmlFile.Filename);
+                    rv &= PatchXml(_xmlFile, _patchXml,
+                        xml.XmlDoc.DocumentElement,
+                        _patchName);
+                }
+
+
+                return rv;
+
+
             default:
                 // Reset flags first
                 IfClauseParsed = false;
@@ -213,6 +304,19 @@ static class ModXmlPatcher
                 return (bool)MethodSinglePatch.Invoke(null,
                     new object[] { _xmlFile, _patchElement, _patchName });
         }
+    }
+
+    private static Dictionary<string, string> ParseKeyValueList(string cfg)
+    {
+        var props = new Dictionary<string, string>();
+        foreach (var kv in cfg.Split(';'))
+        {
+            var kvpair = kv.Trim();
+            if (string.IsNullOrEmpty(kvpair)) continue;
+            var parts = kvpair.Split(new char[] { '=' }, 2);
+            props[parts[0]] = parts.Length == 2 ? parts[1] : null;
+        }
+        return props;
     }
 
     // Hook into vanilla XML Patcher
@@ -241,7 +345,7 @@ static class ModXmlPatcher
             if (!string.IsNullOrEmpty(version))
             {
                 // Check if version is too new for us
-                if (int.Parse(version) > 2) return true;
+                if (int.Parse(version) > 3) return true;
             }
             // Call out to static helper function
             __result = PatchXml(
