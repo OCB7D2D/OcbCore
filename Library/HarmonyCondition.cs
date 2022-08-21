@@ -13,8 +13,6 @@ namespace OCBNET
 
         public string Condition = string.Empty;
 
-        // static MethodInfo = AccessTools.
-
         private static MethodInfo GetOcbCoreModConditions()
         {
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())

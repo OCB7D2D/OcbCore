@@ -11,7 +11,7 @@ public class ModBaz : IModApi
         HarmonyCondition.PatchAll(harmony, Assembly.GetExecutingAssembly());
     }
 
-    [HarmonyCondition("HasConfig(SCore;Fire),HasConfig(SCore;Base)")]
+    [HarmonyCondition("OcbCore>=0.0.0.0,OcbCore<=0.0.0.1,HasConfig(SCore;Fire),HasConfig(SCore;Base)")]
     [HarmonyPatch(typeof(EntityPlayerLocal))]
     [HarmonyPatch("Update")]
     public class EntityPlayerLocalUpdate

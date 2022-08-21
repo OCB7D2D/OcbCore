@@ -62,23 +62,30 @@ class ModConditions
             int gtpos = condition.IndexOf(">");
             int lepos = condition.IndexOf("≤");
             int gepos = condition.IndexOf("≥");
+            int letpos = condition.IndexOf("<=");
+            int getpos = condition.IndexOf(">=");
             int length = condition.Length - notpos;
             if (ltpos != -1) length = ltpos - notpos;
             else if (gtpos != -1) length = gtpos - notpos;
             else if (lepos != -1) length = lepos - notpos;
             else if (gepos != -1) length = gepos - notpos;
+            else if (letpos != -1) length = letpos - notpos;
+            else if (getpos != -1) length = getpos - notpos;
             string name = condition.Substring(notpos, length);
+            int off = getpos != -1 || letpos != -1 ? 2 : 1;
             if (length != condition.Length - notpos)
             {
                 if (ModManager.GetMod(name) is Mod mod)
                 {
-                    string version = condition.Substring(notpos + length + 1);
+                    string version = condition.Substring(notpos + length + off);
                     Version having = Version.Parse(mod.ModInfo?.Version?.Value);
                     Version testing = Version.Parse(version);
                     if (ltpos != -1) result = having < testing;
                     if (gtpos != -1) result = having > testing;
                     if (lepos != -1) result = having <= testing;
                     if (gepos != -1) result = having >= testing;
+                    if (letpos != -1) result = having <= testing;
+                    if (getpos != -1) result = having >= testing;
                 }
                 else
                 {
