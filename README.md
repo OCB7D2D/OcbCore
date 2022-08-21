@@ -98,6 +98,17 @@ In case you test for other mods, you should always include those
 in the `ModConfig.xml` as an `After` dependency to ensure the
 proper load order under all circumstances.
 
+## Further ideas
+
+### Inter Mod Communications (IMC)
+
+Term borrowed from IPC (Inter Process Communications), to allow events
+and other messages to be emitted and received in an agnostic way. E.g.
+we only would provide a helper class, that relies on reflection, to
+get to the shared API to register event handlers or to emit events.
+
+This way a mod could e.g. inform other mods that a key-binding was changed. 
+
 ## Download and Install
 
 Simply [download here from GitHub][1] and put into your A20 Mods folder:
