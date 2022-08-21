@@ -53,9 +53,11 @@ class ModConditions
         // Ignore if condition is empty or null
         if (string.IsNullOrEmpty(conditions)) return false;
         // Split comma separated list (no whitespace allowed yet)
-        foreach (string condition in conditions.Split(','))
+        foreach (string value in conditions.Split(','))
         {
             bool result = true;
+            string condition = value.Trim();
+            if (string.IsNullOrEmpty(condition)) continue;
             // Try to find version comparator
             int notpos = condition[0] == '!' ? 1 : 0;
             int ltpos = condition.IndexOf("<");
@@ -78,8 +80,8 @@ class ModConditions
                 if (ModManager.GetMod(name) is Mod mod)
                 {
                     string version = condition.Substring(notpos + length + off);
-                    Version having = Version.Parse(mod.ModInfo?.Version?.Value);
-                    Version testing = Version.Parse(version);
+                    Version having = Version.Parse(mod.ModInfo?.Version?.Value?.Trim());
+                    Version testing = Version.Parse(version.Trim());
                     if (ltpos != -1) result = having < testing;
                     if (gtpos != -1) result = having > testing;
                     if (lepos != -1) result = having <= testing;
