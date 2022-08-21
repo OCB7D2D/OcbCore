@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xml>
+	<ModConfig>
+		<Require mod="OcbCore" />
+		<!-- ToDo: Before -->
+		<After mod="ModFoo" />
+		<After mod="ModBar" />
+	</ModConfig>
+</xml>
