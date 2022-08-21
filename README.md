@@ -2,15 +2,15 @@
 
 This Core Mod is only meant as a POC and WIP project to kick-start
 a community discussion to adapt something similar, or to build up on.
-It should not be used in any project yet, since anything my change.
+It should not be used in any project yet, since anything may change.
 
 [![GitHub CI Compile Status][3]][2]
 
 ## Functionality Overview
 
-This Mod is intended to be used as the very first mod to take care
-of all other mods to be loaded. Goal is to do this transparently as
-possible, so no other mod needs to hard-depend on it if possible.
+This Mod is intended to be used as the very first mod to take care of all
+other mods to be loaded. Goal is to do this as transparent and as agnostic
+as possible, so no other mod needs to hard-depend on it if possible.
 
 Currently there are three main features implemented in this POC.
 - Load Orders of mods by dependencies, independent from Folder Path.
@@ -20,7 +20,7 @@ Currently there are three main features implemented in this POC.
 ## `ModConfig.xml` settings file
 
 This Mod allows every other mod to have a `ModConfig.xml` file to
-configure how the code mod should handle the loading.
+configure how the core mod should handle the loading.
 
 ```xml
 <xml>
@@ -46,9 +46,9 @@ defines in which order Harmony patches are applied and executed.
 Secondly, once a world is being loaded, the game also loads the
 XML config in that same load order.
 
-Note: the algorithm to determine that order is not really battle-
-tested, so expect that it might have bugs in some edge-cases. It
-should properly detect circular dependencies though.
+Note: the algorithm to determine that order is not really battle-tested,
+so expect that it might have bugs in some edge-cases. It should properly
+detect circular dependencies though.
 
 ## Conditional Harmony Patching
 
