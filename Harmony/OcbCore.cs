@@ -1,3 +1,24 @@
+/*
+Copyright © 2022 Marcel Greter
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the “Software”), to deal
+in the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 using System.Reflection;
 using HarmonyLib;
 using OCBNET;
@@ -58,19 +79,20 @@ public class OcbCore : IModApi
         Log.Out(" Loading Patch: " + GetType().ToString());
         Harmony harmony = new Harmony($"harmony-auto-{Guid.NewGuid()}");
         HarmonyCondition.PatchAll(harmony, Assembly.GetExecutingAssembly());
-        // Original code also uses `dict`
-        // Shouldn't it be a sorted list?
-        foreach (var kv in LoadedMods.Get(null)?.dict)
+        if (GetType().GetMethod("PrefixModInit") is MethodInfo fn)
         {
-            var rv = AccessTools.Method(kv.Value.ApiInstance.GetType(), "InitMod");
-            if (rv == null) continue;
-            var patcher = harmony.CreateProcessor(rv);
-            if (patcher == null) continue;
-            var fn = this.GetType().GetMethod("PrefixModInit");
-            if (fn == null) continue;
-            patcher.AddPrefix(fn);
-            patcher.Patch();
-            LastModToLoad = kv.Value;
+            // Original code also uses `dict`
+            // Shouldn't it be a sorted list?
+            foreach (var kv in LoadedMods.Get(null)?.dict)
+            {
+                var rv = AccessTools.Method(kv.Value.ApiInstance.GetType(), "InitMod");
+                if (rv == null) continue;
+                var patcher = harmony.CreateProcessor(rv);
+                if (patcher == null) continue;
+                patcher.AddPrefix(fn);
+                patcher.Patch();
+                LastModToLoad = kv.Value;
+            }
         }
     }
 
