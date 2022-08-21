@@ -92,7 +92,6 @@
     <Compile Include="Library\SingletonInstance.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ModConfig.xml" />
     <Content Include="ModInfo.xml" />
   </ItemGroup>
   <ItemGroup>

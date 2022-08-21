@@ -1,14 +1,38 @@
 ﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace OCBNET
 {
+
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
     public class HarmonyCondition : Attribute
     {
+
         public string Condition = string.Empty;
+
+        // static MethodInfo = AccessTools.
+
+        private static MethodInfo GetOcbCoreModConditions()
+        {
+            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                if (string.IsNullOrEmpty(assembly?.FullName)) continue;
+                if (assembly.FullName.StartsWith("Microsoft.VisualStudio")) continue;
+                foreach (Type type in assembly.GetTypes())
+                {
+                    if (type.FullName != "ModConditions") continue;
+                    // ToDo: narrow down selection even further (e.g. enforce static)
+                    return type.GetMethod("Evaluate", new Type[] { typeof(string) });
+                }
+            }
+            Log.Warning("ModConditions not found, will apply all patches blindly");
+            return null;
+        }
+
+        static MethodInfo ModConditions = GetOcbCoreModConditions();
 
         public HarmonyCondition(string condition)
         {
@@ -18,7 +42,9 @@ namespace OCBNET
         public bool Evaluate()
         {
             if (Condition == null) return false;
-            return ModConditions.Evaluate(Condition);
+            if (ModConditions == null) return true;
+            return (bool)ModConditions.Invoke(
+                null, new object[] { Condition });
         }
 
         public static void PatchAll(Assembly assembly)

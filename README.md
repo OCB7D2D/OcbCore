@@ -1,8 +1,18 @@
 # OCB Core Mod - 7 Days to Die (A20) Addon
 
-Work in Progress - nothing to see yet!
+This Core Mod is only meant as a POC and WIP project to kick-start
+a community discussion to adapt something similar, or to build up on.
+It should not be used in any project yet, since anything my change.
 
 [![GitHub CI Compile Status][3]][2]
+
+## Functionality Overview
+
+This Mod is intended to be used as the very first mod to take care
+of all other mods to be loaded. Goal is to do this transparently as
+possible, so no other mod needs to hard-depend on it if possible.
+
+
 
 ## Download and Install
 
