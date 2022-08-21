@@ -2,7 +2,8 @@
 <xml>
 	<ModConfig>
 		<Require mod="CustomSettings" />
-		<Config name="UserSetting" value="name=MySettingA;type=bool;label=uiMySettingA" />
-		<Config name="UserSetting" value="name=MySettingB;type=bool;label=uiMySettingB" />
+		<Config name="GamePrefs" value="name=LoadVanillaMap;type=Bool;default=true" />
+		<Config name="GamePrefs" value="name=OtherGamePref;type=Bool;default=true" />
+		<Config name="GamePrefs" value="name=EvenMoreStuff;type=Bool;default=true" />
 	</ModConfig>
 </xml>

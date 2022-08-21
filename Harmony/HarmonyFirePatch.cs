@@ -21,11 +21,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using HarmonyLib;
 using OCBNET;
+using System;
 
 class HarmonyFirePatch
 {
-    [HarmonyCondition("HasConfig(SCore;Fire)")]
-    [HarmonyCondition("HasConfig(SCore;Base)")]
+
+    // [HarmonyCondition("HasConfig(SCore;Fire)")]
+    // [HarmonyCondition("HasConfig(SCore;Base)")]
     [HarmonyPatch(typeof(EntityPlayerLocal))]
     [HarmonyPatch("Update")]
     public class EntityPlayerLocalUpdate

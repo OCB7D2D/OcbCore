@@ -73,18 +73,23 @@ public class OcbCore : IModApi
 
         return false;
     }
-    
+
     public void InitMod(Mod mod)
     {
         Log.Out(" Loading Patch: " + GetType().ToString());
+        var modcfg = ModConfigs.Instance;
         Harmony harmony = new Harmony($"harmony-auto-{Guid.NewGuid()}");
+        // harmony.PatchAll(Assembly.GetExecutingAssembly());
         HarmonyCondition.PatchAll(harmony, Assembly.GetExecutingAssembly());
+        CustomGamePref.AddAll(modcfg.GetConfigs("GamePrefs")?.list);
+
         if (GetType().GetMethod("PrefixModInit") is MethodInfo fn)
         {
             // Original code also uses `dict`
             // Shouldn't it be a sorted list?
             foreach (var kv in LoadedMods.Get(null)?.dict)
             {
+                if (kv.Value == mod) continue; // Do not patch ourself ;)
                 var rv = AccessTools.Method(kv.Value.ApiInstance.GetType(), "InitMod");
                 if (rv == null) continue;
                 var patcher = harmony.CreateProcessor(rv);

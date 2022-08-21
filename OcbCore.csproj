@@ -83,6 +83,8 @@
     <Compile Include="Harmony\AssemblyInfo.cs" />
     <Compile Include="Harmony\HarmonyFirePatch.cs" />
     <Compile Include="Harmony\OcbCore.cs" />
+    <Compile Include="Library\CustomEnums.cs" />
+    <Compile Include="Library\CustomGamePref.cs" />
     <Compile Include="Library\HarmonyCondition.cs" />
     <Compile Include="Library\HarmonyFieldProxy.cs" />
     <Compile Include="Library\HarmonySerializer.cs" />
@@ -91,6 +93,7 @@
     <Compile Include="Library\ModConfigs.cs" />
     <Compile Include="Library\ModXmlPatcher.cs" />
     <Compile Include="Library\SingletonInstance.cs" />
+    <Compile Include="Library\Utilities.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="ModInfo.xml" />
