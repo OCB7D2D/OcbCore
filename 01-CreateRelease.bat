@@ -25,6 +25,7 @@ echo create %VERSION%
 xcopy *.xml build\%NAME%\
 xcopy *.md build\%NAME%\
 xcopy *.dll build\%NAME%\
+xcopy Demo build\%NAME%\Demo\ /S
 xcopy Config build\%NAME%\Config\ /S
 xcopy Screens build\%NAME%\Screens\ /S
 xcopy Resources build\%NAME%\Resources\ /S
