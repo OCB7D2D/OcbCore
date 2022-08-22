@@ -84,6 +84,7 @@
     <Compile Include="Harmony\HarmonyFirePatch.cs" />
     <Compile Include="Harmony\OcbCore.cs" />
     <Compile Include="Library\CustomEnums.cs" />
+    <Compile Include="Library\CustomGamePrefDedi.cs" />
     <Compile Include="Library\CustomGamePref.cs" />
     <Compile Include="Library\HarmonyCondition.cs" />
     <Compile Include="Library\HarmonyFieldProxy.cs" />

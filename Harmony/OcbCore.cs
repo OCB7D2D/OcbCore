@@ -85,6 +85,9 @@ public class OcbCore : IModApi
         HarmonyCondition.PatchAll(harmony, Assembly.GetExecutingAssembly());
         CustomGamePref.AddAll(modcfg.GetConfigs("GamePrefs")?.list);
 
+        // Load additional config file for dedicated server to provide default values
+        if (GameManager.IsDedicatedServer) CustomGamePrefDedi.ApplyCustomServerConfig();
+
         if (GetType().GetMethod("PrefixModInit") is MethodInfo fn)
         {
             // Original code also uses `dict`

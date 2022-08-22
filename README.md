@@ -164,6 +164,31 @@ later load in the future, it will deduct new ids for the new blocks from there.
 On top of the custom enums, this mod allows to create new custom GamePrefs.
 Currently in a very early POC state, but working for bool down to the UI.
 
+### Setting custom game prefs via server settings xml
+
+Using actual `GamePrefs` has the advantage, that they are saved by the game
+automatically. In single player the user can configure those options via UI.
+But for dedicated servers, these values are set via the "serversettings.xml".
+Unfortunately dedicated servers load that file before applying any patches.
+Therefore custom `GamePrefs` can't be supported directly there. But to solve
+this I simply look for a "serversettings.core.xml", and if it exists, we load
+that file too through the same parser, which now should know the new settings.
+
+```xml
+<?xml version="1.0"?>
+<ServerSettings>
+	<property name="LoadVanillaMap" value="false" />
+</ServerSettings>
+```
+
+Note that the "serversettings.xml" path is given via `configfile` command
+line option. We simply alter the extension, so you have a pair of files.
+E.g. when you start the dedicated server with `configfile=MyServerConfig`,
+it will load the following files.
+
+- `MyServerConfig.xml` - Regular config before harmony patching
+- `MyServerConfig.core.xml` - Optional config after enum patching
+
 ## Further ideas
 
 ### Inter Mod Communications (IMC)

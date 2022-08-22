@@ -49,8 +49,8 @@ public class CustomGamePref
         return pref;
     }
 
-    // static readonly HarmonyFieldProxy<GamePrefs.PropertyDecl[]> GamePrefsProp = new
-    //     HarmonyFieldProxy<GamePrefs.PropertyDecl[]>(typeof(GamePrefs), "propertyList");
+    static readonly HarmonyFieldProxy<GamePrefs.PropertyDecl[]> GamePrefsProp = new
+        HarmonyFieldProxy<GamePrefs.PropertyDecl[]>(typeof(GamePrefs), "propertyList");
 
     static readonly HarmonyFieldProxy<object[]> GamePrefsPropValues = new
         HarmonyFieldProxy<object[]>(typeof(GamePrefs), "propertyValues");
@@ -76,7 +76,7 @@ public class CustomGamePref
                 cfg.name, (int)cfg.idx);
             AllPrefs.Add(cfg);
         }
-        // GamePrefsProp.Set(GamePrefs.Instance, propList); // not needed?
+        GamePrefsProp.Set(GamePrefs.Instance, propList); // not needed?
         GamePrefsPropValues.Set(GamePrefs.Instance, propValues); // needed!?
     }
 
