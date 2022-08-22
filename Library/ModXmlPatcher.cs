@@ -132,6 +132,7 @@ static class ModXmlPatcher
         {
             string name = str.Substring(4, str.Length - 5);
             if (cfg.TryGetValue(name, out string value)) return value;
+            return string.Empty; // Value should always be replaced
         }
         return match.Value;
     }

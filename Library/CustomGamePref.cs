@@ -33,6 +33,26 @@ public class CustomGamePref
         initialized = true;
     }
 
+    // Can't use original at this point, since new game enums are not know yet
+    private static object ParseGamePrefValue(GamePrefs.EnumType type, string _val)
+    {
+        switch (type)
+        {
+            case GamePrefs.EnumType.Int:
+                return (object)int.Parse(_val);
+            case GamePrefs.EnumType.Float:
+                return (object)StringParsers.ParseFloat(_val);
+            case GamePrefs.EnumType.String:
+                return (object)_val;
+            case GamePrefs.EnumType.Bool:
+                return (object)StringParsers.ParseBool(_val);
+            case GamePrefs.EnumType.Binary:
+                return (object)_val;
+            default:
+                return (object)null;
+        }
+    }
+
     public static CustomPrefCfg Parse(string cfg)
     {
         if (!initialized) Init();
@@ -44,8 +64,8 @@ public class CustomGamePref
         pref.idx = (EnumGamePrefs)idx;
         pref.prop = prop;
         pref.name = dict["name"];
-        pref.def = true; // ToDo: dict["default"];
         pref.type = EnumUtils.Parse<GamePrefs.EnumType>(dict["type"]);
+        pref.def = ParseGamePrefValue(pref.type, dict["default"]);
         return pref;
     }
 
