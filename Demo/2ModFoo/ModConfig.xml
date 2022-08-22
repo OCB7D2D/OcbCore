@@ -3,5 +3,7 @@
 	<ModConfig>
 		<Require mod="OcbCore" />
 		<Config name="SCore" value="Base"/>
+		<Assert condition="!ModOther" />
+		<Assert condition="OcbCore&lt;1.0.0" />
 	</ModConfig>
 </xml>

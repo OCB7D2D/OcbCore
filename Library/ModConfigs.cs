@@ -111,6 +111,25 @@ namespace OCBNET
                     case XmlNodeType.Element:
                         switch (child.Name)
                         {
+                            case "Assert":
+                                foreach (XmlAttribute attr in child.Attributes)
+                                {
+                                    if (attr.Name != "condition")
+                                    {
+                                        Log.Warning(string.Format("Unknown attribute found: {0} (file {1}, line {2})",
+                                            attr.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                                    }
+                                    else
+                                    {
+                                        if (!ModConditions.Evaluate(attr.Value))
+                                        {
+                                            Log.Error("Assertion '{0}' failed for {1}",
+                                                attr.Value, mod.ModInfo.Name.Value);
+                                            Log.Warning("Something with installed mods is wrong!");
+                                        }
+                                    }
+                                }
+                                continue;
                             case "Require":
                             case "After":
                                 foreach (XmlAttribute attr in child.Attributes)

@@ -1,4 +1,4 @@
-# OCB Core Mod - 7 Days to Die (A20) Addon
+﻿# OCB Core Mod - 7 Days to Die (A20) Addon
 
 This Core Mod is only meant as a POC and WIP project to kick-start
 a community discussion to adapt something similar, or to build up on.
@@ -58,6 +58,24 @@ the core mod level, any other mod can say "I need ModFoo" or even "I never
 want ModBar". In case "ModFoo" is missing, the error message will properly
 say that "ModXY requires ModFoo, which is not installed". Further we could
 add also a "not" check to say "ModXY doesn't like ModBar to be present".
+
+### Assertions on ModConfig level
+
+I've added another feature to run conditions when ModConfigs are loaded.
+This way you can test conditions more easily and you can add more sanity
+checks in anyway a mod author sees fit, e.g. testing for some other mod
+to not be installed or of a certain version.
+
+```xml
+<ModConfig>
+	<Assert condition="!ModOther" />
+	<Assert condition="OcbCore&lt;1.0.0" />
+</ModConfig>
+```
+
+Please beware that you can't write `<` and `>` directly in XML, you need
+to escape it properly in order for the XML parser to not bail hard on you.
+Or use unicode for "less/more or equal": `≤` (U+2264) and `≥` (U+2265).
 
 ## Conditional Harmony Patching
 

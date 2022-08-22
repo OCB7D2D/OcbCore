@@ -89,7 +89,6 @@
     <Compile Include="Library\HarmonyCondition.cs" />
     <Compile Include="Library\HarmonyFieldProxy.cs" />
     <Compile Include="Library\HarmonySerializer.cs" />
-    <Compile Include="Library\ModCommunications.cs" />
     <Compile Include="Library\ModConditions.cs" />
     <Compile Include="API\ModConditionsAPI.cs" />
     <Compile Include="Library\ModConfigs.cs" />
