@@ -76,9 +76,11 @@ public class OcbCore : IModApi
 
     public void InitMod(Mod mod)
     {
+        // Register conditions for custom enums
+        CustomEnums.RegisterCondition();
         Log.Out(" Loading Patch: " + GetType().ToString());
         var modcfg = ModConfigs.Instance;
-        Harmony harmony = new Harmony($"harmony-auto-{Guid.NewGuid()}");
+        Harmony harmony = new Harmony(GetType().ToString());
         // harmony.PatchAll(Assembly.GetExecutingAssembly());
         HarmonyCondition.PatchAll(harmony, Assembly.GetExecutingAssembly());
         CustomGamePref.AddAll(modcfg.GetConfigs("GamePrefs")?.list);

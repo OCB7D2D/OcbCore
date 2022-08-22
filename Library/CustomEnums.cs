@@ -67,9 +67,15 @@ namespace OCBNET
             Register(et, name, bitwise ? max * 2 : max + 1);
         }
 
+        public static void RegisterCondition()
+        {
+            ModConditionsAPI.RegisterCondition(
+                "HasCustomEnums",
+                () => Name2Int.Count > 0);
+        }
     }
 
-    // [HarmonyCondition("HasAnyConfig(GamePrefs)")]
+    [HarmonyCondition("HasCustomEnums")]
     [HarmonyPatch(typeof(System.Enum))]
     [HarmonyPatch("GetName")]
     public class CustomEnums_EnumGetName
@@ -90,7 +96,7 @@ namespace OCBNET
         }
     }
 
-    // [HarmonyCondition("HasAnyConfig(GamePrefs)")]
+    [HarmonyCondition("HasCustomEnums")]
     [HarmonyPatch(typeof(Enum))]
     [HarmonyPatch("Parse")]
     [HarmonyPatch(new Type[] {

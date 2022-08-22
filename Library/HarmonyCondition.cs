@@ -64,11 +64,6 @@ namespace OCBNET
                 null, new object[] { Condition });
         }
 
-        public static void PatchAll(Assembly assembly)
-        {
-            PatchAll(new Harmony($"harmony-auto-{Guid.NewGuid()}"), assembly);
-        }
-
         // Helper function to apply patches with conditions applied
         public static void PatchAll(Harmony harmony, Assembly assembly)
         {

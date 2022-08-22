@@ -26,7 +26,8 @@ class ModConditions
 {
 
     // Must be set from outside first, otherwise not much happens
-    public static Dictionary<string, Func<bool>> Conditions = null;
+    public static Dictionary<string, Func<bool>> Conditions 
+        = new Dictionary<string, Func<bool>>();
 
     // Evaluates one single condition (can be negated)
     private static bool EvaluateSingle(string condition)
@@ -38,6 +39,11 @@ class ModConditions
             // We don't cache anything
             return callback();
         }
+        //else if (condition == "HasCustomEnums")
+        //{
+        //    Log.Out("Testing HasCustomEnums {0}", OCBNET.CustomEnums.Name2Int.Count);
+        //    return OCBNET.CustomEnums.Name2Int.Count > 0;
+        //}
         else if (condition.StartsWith("HasAnyConfig(") && condition.EndsWith(")"))
         {
             OCBNET.ModConfigs mods = OCBNET.ModConfigs.Instance;

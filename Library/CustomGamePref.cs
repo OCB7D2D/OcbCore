@@ -2,9 +2,6 @@
 using OCBNET;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 public class CustomGamePref
 {
@@ -13,11 +10,11 @@ public class CustomGamePref
     static int CurrentPropIdx = -1; 
     static int CurrentEnumIdx = -1;
 
-    public static Dictionary<Type, Dictionary<string, CustomPrefCfg>> CustomGamePrefs
+    public static readonly Dictionary<Type, Dictionary<string, CustomPrefCfg>> CustomGamePrefs
         = new Dictionary<Type, Dictionary<string, CustomPrefCfg>>();
 
-    private static List<CustomPrefCfg> AllPrefs =
-        new List<CustomPrefCfg>();
+    private static readonly List<CustomPrefCfg> AllPrefs
+        = new List<CustomPrefCfg>();
 
     public struct CustomPrefCfg
     {
@@ -52,8 +49,8 @@ public class CustomGamePref
         return pref;
     }
 
-    static readonly HarmonyFieldProxy<GamePrefs.PropertyDecl[]> GamePrefsProp = new
-        HarmonyFieldProxy<GamePrefs.PropertyDecl[]>(typeof(GamePrefs), "propertyList");
+    // static readonly HarmonyFieldProxy<GamePrefs.PropertyDecl[]> GamePrefsProp = new
+    //     HarmonyFieldProxy<GamePrefs.PropertyDecl[]>(typeof(GamePrefs), "propertyList");
 
     static readonly HarmonyFieldProxy<object[]> GamePrefsPropValues = new
         HarmonyFieldProxy<object[]>(typeof(GamePrefs), "propertyValues");
@@ -89,7 +86,7 @@ public class CustomGamePref
     }
 
 
-    // [HarmonyCondition("HasAnyConfig(GamePrefs)")]
+    [HarmonyCondition("HasCustomEnums")]
     [HarmonyPatch(typeof(GameModeSurvival))]
     [HarmonyPatch("GetSupportedGamePrefsInfo")]
 
