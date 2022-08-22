@@ -122,12 +122,10 @@ static class ModXmlPatcher
     public static string EvaluateTemplate(Match match, int i, Dictionary<string, string> cfg)
     {
         if (match.Groups.Count < 2) return match.Value;
-        Log.Out("Match {0}", match.Groups[1].Value);
         string str = match.Groups[1].Value.Trim();
         if (str.StartsWith("Mul(") && str.EndsWith(")"))
         {
             int multiplier = int.Parse(str.Substring(4, str.Length - 5));
-            Log.Out("Returning {0}", (multiplier * i).ToString());
             return (multiplier * i).ToString();
         }
         else if (str.StartsWith("Val(") && str.EndsWith(")"))
