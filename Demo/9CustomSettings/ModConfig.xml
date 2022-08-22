@@ -2,5 +2,6 @@
 <xml>
 	<ModConfig>
 		<Require mod="OcbCore" />
+		<Config name="OcbCore" value="XmlPatcher" />
 	</ModConfig>
 </xml>

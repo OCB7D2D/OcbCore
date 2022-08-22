@@ -318,6 +318,7 @@ static class ModXmlPatcher
     }
 
     // Hook into vanilla XML Patcher
+    [HarmonyCondition("HasConfig(OcbCore;XmlPatcher)")]
     [HarmonyPatch(typeof(XmlPatcher))]
     [HarmonyPatch("PatchXml")]
     public class XmlPatcher_PatchXml
