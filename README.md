@@ -50,6 +50,15 @@ Note: the algorithm to determine that order is not really battle-tested,
 so expect that it might have bugs in some edge-cases. It should properly
 detect circular dependencies though.
 
+### Reasoning to interfere with load order
+
+Today, you often will see issues because users are not really sure which
+mods need which dependency (see SMX as an example). By enforcing this at
+the core mod level, any other mod can say "I need ModFoo" or even "I never
+want ModBar". In case "ModFoo" is missing, the error message will properly
+say that "ModXY requires ModFoo, which is not installed". Further we could
+add also a "not" check to say "ModXY doesn't like ModBar to be present".
+
 ## Conditional Harmony Patching
 
 Sometimes some mods contain multiple functionalities that should
