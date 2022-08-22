@@ -15,10 +15,10 @@ namespace OCBNET
         public static void Register(Type enumType, string name, int idx)
         {
             // Make sure the required structures are created if they don't exist yet
-            if (!Name2Int.TryGetValue(typeof(EnumGamePrefs), out Dictionary<string, int> name2int))
-                Name2Int.Add(typeof(EnumGamePrefs), name2int = new Dictionary<string, int>());
-            if (!Int2Name.TryGetValue(typeof(EnumGamePrefs), out Dictionary<int, string> int2name))
-                Int2Name.Add(typeof(EnumGamePrefs), int2name = new Dictionary<int, string>());
+            if (!Name2Int.TryGetValue(enumType, out Dictionary<string, int> name2int))
+                Name2Int.Add(enumType, name2int = new Dictionary<string, int>());
+            if (!Int2Name.TryGetValue(enumType, out Dictionary<int, string> int2name))
+                Int2Name.Add(enumType, int2name = new Dictionary<int, string>());
             // Register the mappings
             name2int.Add(name, idx);
             int2name.Add(idx, name);
@@ -26,6 +26,45 @@ namespace OCBNET
             string lower = name.ToLower();
             if (lower == name) return;
             name2int.Add(lower, idx);
+            // Add log message for now
+            Log.Out("Added custom enum {0}.{1} => {2}",
+                enumType, name, idx);
+        }
+
+        public static void Add(string type, string name, bool bitwise = false, bool sparse = true)
+        {
+            Add(AccessTools.TypeByName(type), name, bitwise, sparse);
+        }
+
+        public static void Add(Type et, string name, bool bitwise = false, bool sparse = true)
+        {
+            int max = -1;
+            if (et.IsEnum == false)
+            {
+                Log.Error("Trying to add an enum field to non enum type {0}", et.FullName);
+            }
+            else
+            {
+                // Search for the maximum value
+                foreach (var field in et.GetEnumValues())
+                    max = Math.Max(max, (int)field);
+                if (Int2Name.TryGetValue(et, out var map))
+                    foreach (var kv in map.Keys)
+                        max = Math.Max(max, (int)kv);
+                /* For another day
+                // We could try to optimize sparse setting for bitwise
+                // But determining that is complicated and not worth it
+                if (bitwise == true || sparse == false)
+                {
+                }
+                // Re-use any holes in existing enums
+                else
+                {
+                }
+                */
+            }
+            // Register, assign and take over integer value
+            Register(et, name, bitwise ? max * 2 : max + 1);
         }
 
     }

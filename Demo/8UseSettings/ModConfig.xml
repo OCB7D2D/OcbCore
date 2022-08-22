@@ -2,6 +2,7 @@
 <xml>
 	<ModConfig>
 		<Require mod="CustomSettings" />
+		<Enum type="QuestTags" name="MyNewQuestTag" bitwise="True" />
 		<Config name="GamePrefs" value="name=LoadVanillaMap;type=Bool;default=true" />
 		<Config name="GamePrefs" value="name=OtherGamePref;type=Bool;default=true" />
 		<Config name="GamePrefs" value="name=EvenMoreStuff;type=Bool;default=true" />

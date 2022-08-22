@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
+using HarmonyLib;
 
 namespace OCBNET
 {
@@ -117,7 +118,7 @@ namespace OCBNET
                                     if (attr.Name != "mod")
                                     {
                                         Log.Warning(string.Format("Unknown attribute found: {0} (file {1}, line {2})",
-                                            child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                                            attr.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                                     }
                                     else if (child.Name == "Require" && ModManager.GetMod(attr.Value) == null)
                                     {
@@ -157,7 +158,7 @@ namespace OCBNET
                                     else
                                     {
                                         Log.Warning(string.Format("Unknown attribute found: {0} (file {1}, line {2})",
-                                            child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                                            attr.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                                     }
                                 }
                                 if (name == null)
@@ -175,6 +176,9 @@ namespace OCBNET
                                     AddConfig(name, value);
                                 }
                                 continue;
+                            case "Enum":
+                                ParseModConfigEnum(child);
+                                continue;
                             default:
                                 Log.Warning(string.Format("Unknown element found: {0} (file {1}, line {2})",
                                     child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
@@ -188,6 +192,57 @@ namespace OCBNET
                             child.NodeType, ((IXmlLineInfo)child).LineNumber.ToString());
                         continue;
                 }
+            }
+        }
+
+        private void ParseModConfigEnum(XmlNode child)
+        {
+            string type = null;
+            string name = null;
+            bool bitwise = false;
+            foreach (XmlAttribute attr in child.Attributes)
+            {
+                if (attr.Name == "name")
+                {
+                    if (name != null)
+                    {
+                        Log.Warning(string.Format("Name attribute given twice: {0} (file {1}, line {2})",
+                            child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                    }
+                    name = attr.Value;
+                }
+                else if (attr.Name == "type")
+                {
+                    if (type != null)
+                    {
+                        Log.Warning(string.Format("Type attribute given twice: {0} (file {1}, line {2})",
+                            child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                    }
+                    type = attr.Value;
+                }
+                else if (attr.Name == "bitwise")
+                {
+                    bitwise = bool.Parse(attr.Value);
+                }
+                else
+                {
+                    Log.Warning(string.Format("Unknown attribute found: {0} (file {1}, line {2})",
+                        attr.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                }
+            }
+            if (name == null)
+            {
+                Log.Warning(string.Format("Config is missing name attribute: {0} (file {1}, line {2})",
+                    child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+            }
+            else if (type == null)
+            {
+                Log.Warning(string.Format("Config is missing type attribute: {0} (file {1}, line {2})",
+                    child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+            }
+            else
+            {
+                CustomEnums.Add(type, name, bitwise);
             }
         }
 
