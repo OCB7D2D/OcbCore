@@ -26,7 +26,7 @@ using System;
 class HarmonyFirePatch
 {
 
-    // [HarmonyCondition("HasConfig(SCore;Fire)")]
+    [HarmonyCondition("HasConfig(SCore;Fire)")]
     // [HarmonyCondition("HasConfig(SCore;Base)")]
     [HarmonyPatch(typeof(EntityPlayerLocal))]
     [HarmonyPatch("Update")]

@@ -87,7 +87,7 @@ public class OcbCore : IModApi
 
         // Load additional config file for dedicated server to provide default values
         if (GameManager.IsDedicatedServer) CustomGamePrefDedi.ApplyCustomServerConfig();
-
+        
         if (GetType().GetMethod("PrefixModInit") is MethodInfo fn)
         {
             // Original code also uses `dict`
@@ -95,6 +95,7 @@ public class OcbCore : IModApi
             foreach (var kv in LoadedMods.Get(null)?.dict)
             {
                 if (kv.Value == mod) continue; // Do not patch ourself ;)
+                if (kv.Value?.ApiInstance == null) continue; // Play safe
                 var rv = AccessTools.Method(kv.Value.ApiInstance.GetType(), "InitMod");
                 if (rv == null) continue;
                 var patcher = harmony.CreateProcessor(rv);

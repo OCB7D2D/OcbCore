@@ -102,6 +102,7 @@ public class CustomGamePref
 
     public static void AddAll(List<string> list)
     {
+        if (list == null) return;
         AddAll(list.ConvertAll(cfg => Parse(cfg)));
     }
 
