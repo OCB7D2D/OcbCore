@@ -22,13 +22,13 @@ namespace OCBNET
             // Register the mappings
             name2int.Add(name, idx);
             int2name.Add(idx, name);
+            // Add log message for now (remove on prod)
+            Log.Out("Added custom enum {0}.{1} => {2}",
+                enumType, name, idx);
             // Also register lower case version
             string lower = name.ToLower();
             if (lower == name) return;
             name2int.Add(lower, idx);
-            // Add log message for now
-            Log.Out("Added custom enum {0}.{1} => {2}",
-                enumType, name, idx);
         }
 
         public static void Add(string type, string name, bool bitwise = false, bool sparse = true)

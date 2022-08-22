@@ -98,6 +98,72 @@ In case you test for other mods, you should always include those
 in the `ModConfig.xml` as an `After` dependency to ensure the
 proper load order under all circumstances.
 
+## Custom Enums
+
+Sometimes you want to add additional fields to existing enums, like
+adding new Tile Entities or Quest Tags. It has been proven that mods
+can already do that on their own account, but a helper utility would
+certainly help to jump-start development of e.g. new Tile Entities.
+
+```xml
+<xml>
+  <ModConfig>
+    <Enum type="TileEntityType" name="MyTileEntity" />
+    <Enum type="QuestTags" name="MyNewQuestTag" bitwise="True" />
+  </ModConfig>
+</xml>
+```
+
+### Some background on enums
+
+Enums are merely a way to distinguish different variations of something,
+like a shirt that comes in various predefined colors. Each color would
+get a unique number (starting from 0), to identify it. That is basically
+all that happens in the code. One part is to choose/assign an appropriate
+number for each type. The other would be to act accordingly in the code,
+regarding this which type a certain entity is. We only cover first part.
+
+### Why are enums important for the game
+
+Even though enums are merely integers, they still map to a given name.
+This is most prominently used in the XML config files, where enums are
+given by their name and not by their integer value. Via "reflection" the
+game will determine what integer value a certain named enum has. E.g.
+`EnumUtils.Parse<EnumGamePrefs>("LoadVanillaMap", false);`.
+
+### How does it work
+
+In order to "add" custom enum entries, we harmony patch two `System.Enum`
+functions (namely `Parse` and `GetName`). Extending an existing enum still
+involves some work, as we need to find an integer value we can occupy. Once
+we figured that out, the integer value and the name is added to two maps.
+One from integer to string, one from string to integer. We keep these maps
+for all extended types, so the patched functions can additionally check
+these maps to return the appropriate values for custom added enum entires.
+
+### Future Ideas
+
+There is some code that you always need to implement if you want to add a
+custom `TileEntity`. First one is to choose an integer value that isn't used
+yet. Then you need to make sure when Tile Entities are loaded, that you hook
+some code into it, so it will instantiate the proper class when your integer
+value is read from the save file. A core mode could add some support here.
+
+### Potential issues
+
+There is one main issue that will arise. Easiest to explain with a custom
+`TileEntity`. Since the numbers we assign to new enums might be persisted in
+a save file, it is prone to mod changes, e.g. when another mod is added
+that also adds a custom `TileEntity`. The only real solution to this problem,
+is to do the same thing the game already does with block IDs. It stores a list
+of assigned ids when the game starts, and when new blocks are detected on a
+later load in the future, it will deduct new ids for the new blocks from there.
+
+## Custom EnumGamePrefs
+
+On top of the custom enums, this mod allows to create new custom GamePrefs.
+Currently in a very early POC state, but working for bool down to the UI.
+
 ## Further ideas
 
 ### Inter Mod Communications (IMC)
