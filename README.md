@@ -227,6 +227,18 @@ get to the shared API to register event handlers or to emit events.
 
 This way a mod could e.g. inform other mods that a key-binding was changed. 
 
+#### Checking if client side has all required mods installed
+
+Core Mod must be installed on server and client side for this to work. Then
+server Core Mod would send a list of mods required on the client side, which
+the Core Mod on the client will check and enforce.
+
+```xml
+<ModConfig>
+	<RequiredOn condition="server,client,both" />
+</ModConfig>
+```
+
 ## Download and Install
 
 Simply [download here from GitHub][1] and put into your A20 Mods folder:
