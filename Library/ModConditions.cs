@@ -26,6 +26,8 @@ class ModConditions
 {
 
     // Must be set from outside first, otherwise not much happens
+    // This is considered public API that others can mess with
+    // Therefore it must not change in any future releases!
     public static Dictionary<string, Func<bool>> Conditions 
         = new Dictionary<string, Func<bool>>();
 
@@ -91,6 +93,8 @@ class ModConditions
 
     // Evaluate a comma separated list of conditions
     // The results are logically `and'ed` together
+    // This is considered public API that others can mess with
+    // Therefore it must not change in any future releases!
     public static bool Evaluate(string conditions)
     {
         // Ignore if condition is empty or null

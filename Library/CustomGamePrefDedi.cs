@@ -35,6 +35,8 @@ public class CustomGamePrefDedi
     static readonly MethodInfo FnLoadConfigFile = AccessTools
         .Method(typeof(GameStartupHelper), "LoadConfigFile");
 
+    // Call this function once and as early as possible
+    // ToDo: should we add an implicit unique safe-guard?
     public static void ApplyCustomServerConfig()
     {
         if (GetCustomServerConfigPath() is string path)
@@ -48,6 +50,9 @@ public class CustomGamePrefDedi
         }
     }
 
+    // Helper function copying mostly how vanilla gets
+    // the path for the server config xml. This function
+    // will replace it with a ".core.xml" extension.
     public static string GetCustomServerConfigPath()
     {
         foreach (string arg in Environment.GetCommandLineArgs())

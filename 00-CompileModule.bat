@@ -5,6 +5,11 @@ call MC7D2D OcbCore.dll ^
   Harmony\*.cs Library\*.cs Utils\*.cs API\*.cs && ^
 echo Successfully compiled OcbCore.dll
 
+call MC7D2D OcbCoreAPI.dll ^
+  /reference:"%PATH_7D2D_MANAGED%\Assembly-CSharp.dll" ^
+  API\*.cs && ^
+echo Successfully compiled OcbCoreAPI.dll
+
 cd Demo\1ModBar
 call 00-CompileModule.bat
 cd ..\..

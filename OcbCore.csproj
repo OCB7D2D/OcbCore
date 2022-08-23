@@ -86,7 +86,7 @@
     <Compile Include="Library\CustomEnums.cs" />
     <Compile Include="Library\CustomGamePrefDedi.cs" />
     <Compile Include="Library\CustomGamePref.cs" />
-    <Compile Include="Library\HarmonyCondition.cs" />
+    <Compile Include="API\HarmonyCondition.cs" />
     <Compile Include="Utils\HarmonyFieldProxy.cs" />
     <Compile Include="Utils\HarmonySerializer.cs" />
     <Compile Include="Library\ModConditions.cs" />

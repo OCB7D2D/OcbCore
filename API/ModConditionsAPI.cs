@@ -26,27 +26,34 @@ using System.Reflection;
 static class ModConditionsAPI
 {
 
-    private static FieldInfo GetOcbCoreModConditions()
+    // Helper function to get interface to core mod
+    private static FieldInfo GetOcbCoreModConditionsField()
     {
+        // ToDo: replace with `ModManager.GetMod("SanctionedName").MainAssembly`
         foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
         {
             if (string.IsNullOrEmpty(assembly?.FullName)) continue;
             if (assembly.FullName.StartsWith("Microsoft.VisualStudio")) continue;
             foreach (Type type in assembly.GetTypes())
             {
+                // Check the type name (ToDo: make more unique)
                 if (type.FullName != "ModConditions") continue;
+                // ToDo: narrow down selection even further (e.g. enforce static)
                 return type.GetField("Conditions");
             }
         }
-        Log.Warning("ModConditions not found, CoreMod not loaded!?");
+        // Is it enough to just emit a warning in that case (or just shut up?)
+        // ToDo: at least we should consider the `ApplyBlindly` boolean by now
+        Log.Warning("ModConditions not found, will apply all patches blindly");
         return null;
     }
 
-    static FieldInfo ModConditions = GetOcbCoreModConditions();
+    // Fetch the reference once and reuse it
+    static readonly FieldInfo ModConditionsField = GetOcbCoreModConditionsField();
 
     public static void RegisterCondition(string name, Func<bool> fn)
     {
-        object value = ModConditions?.GetValue(null);
+        object value = ModConditionsField?.GetValue(null);
         if (value is Dictionary<string, Func<bool>> conditions)
         {
             conditions[name] = fn; // create or overwrite
