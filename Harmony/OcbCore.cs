@@ -50,7 +50,8 @@ public class OcbCore : IModApi
             Log.Out("Detected Last Mod, loading deferred mods in order now");
             Log.Out("Resorting mod list to load mod by their dependencies");
             InitLater.Sort(delegate (Mod a, Mod b) {
-                return cfg.HasDependency(b, a) ? -1 : 1;
+                return cfg.HasDependency(b, a) ? -1 :
+                    a.FolderName.CompareTo(b.FolderName);
             });
             foreach (Mod load in InitLater)
             {

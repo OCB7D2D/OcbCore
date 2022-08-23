@@ -89,7 +89,8 @@ namespace OCBNET
             }
             // Re-sort for load order
             LoadOrder.Sort(delegate (Mod a, Mod b) {
-                return HasDependency(b, a) ? -1 : 1;
+                return HasDependency(a, b) ? -1 :
+                    a.FolderName.CompareTo(b.FolderName);
             });
             // Enable debug for now to check it if needed
             if (DebugLoadOrder)
