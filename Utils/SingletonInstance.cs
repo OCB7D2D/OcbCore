@@ -19,7 +19,13 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-public class SingletonInstance<T> : object where T : new()
+
+public interface ISingletonInstance
+{
+    void Init();
+}
+
+public abstract class SingletonInstance<T> : object where T : ISingletonInstance, new()
 {
     protected static T instance;
     public static T Instance
@@ -29,6 +35,7 @@ public class SingletonInstance<T> : object where T : new()
             if (instance == null)
             {
                 instance = new T();
+                instance.Init();
             }
             return instance;
         }

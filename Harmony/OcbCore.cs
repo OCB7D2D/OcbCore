@@ -49,6 +49,9 @@ public class OcbCore : IModApi
             var cfg = ModConfigs.Instance;
             Log.Out("Detected Last Mod, loading deferred mods in order now");
             Log.Out("Resorting mod list to load mod by their dependencies");
+            // Remove mods which that fail their conditions
+            InitLater.RemoveAll(entry => !cfg.IsModEnabled(entry));
+            // Sort by dependencies or keep alphanumeric order
             InitLater.Sort(delegate (Mod a, Mod b) {
                 return cfg.HasDependency(b, a) ? -1 :
                     a.FolderName.CompareTo(b.FolderName);

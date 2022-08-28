@@ -3,5 +3,6 @@
 	<ModConfig>
 		<Require mod="OcbCore" />
 		<Config name="OcbCore" value="XmlPatcher" />
+		<Config name="OcbCore" value="Fire" />
 	</ModConfig>
 </xml>

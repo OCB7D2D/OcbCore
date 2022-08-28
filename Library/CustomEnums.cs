@@ -50,8 +50,10 @@ namespace OCBNET
             if (!Int2Name.TryGetValue(enumType, out Dictionary<int, string> int2name))
                 Int2Name.Add(enumType, int2name = new Dictionary<int, string>());
             // Register the mappings
-            name2int.Add(name, idx);
-            int2name.Add(idx, name);
+            // name2int.Add(name, idx);
+            name2int[name] = idx;
+            // int2name.Add(idx, name);
+            int2name[idx] = name;
             // Add log message for now (remove on prod)
             Log.Out("Added custom enum {0}.{1} => {2}",
                 enumType, name, idx);
