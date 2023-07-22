@@ -1,0 +1,3 @@
+<config patcher-version="4">
+	<echo warn="LOADED MOD BAR (was 1st, should be 2nd)"/>
+</config>

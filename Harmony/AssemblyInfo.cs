@@ -30,7 +30,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("OCBNET")]
 [assembly: AssemblyProduct("OcbCore")]
-[assembly: AssemblyCopyright("Copyright © Marcel Greter 2022")]
+[assembly: AssemblyCopyright("Copyright © Marcel Greter 2023")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

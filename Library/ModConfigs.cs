@@ -19,12 +19,11 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-using ICSharpCode.WpfDesign.XamlDom;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
-using HarmonyLib;
+using System.Xml.Linq;
 
 namespace OCBNET
 {
@@ -37,7 +36,7 @@ namespace OCBNET
         // ToDo: config is loaded in original order
         readonly Dictionary<string, HashSetList<string>> Configs;
 
-        bool DebugLoadOrder = true;
+        public bool DebugLoadOrder = true;
 
         public List<Mod> LoadOrder;
 
@@ -56,30 +55,7 @@ namespace OCBNET
                 try
                 {
                     XmlFile xml = new XmlFile(mod.Path, "ModConfig.xml");
-                    foreach (XmlNode child in xml.XmlDoc.DocumentElement.ChildNodes)
-                    {
-                        switch (child.NodeType)
-                        {
-                            case XmlNodeType.Element:
-                                switch (child.Name)
-                                {
-                                    case "ModConfig":
-                                        ParseModConfig(mod, (PositionXmlElement)child);
-                                        continue;
-                                    default:
-                                        Log.Warning(string.Format("Unknown element found: {0} (file {1}, line {2})",
-                                            child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
-                                        continue;
-                                }
-                            case XmlNodeType.Comment:
-                            case XmlNodeType.Whitespace:
-                                continue;
-                            default:
-                                Log.Error("Unexpected XML node: {0} at line {1}",
-                                    child.NodeType, ((IXmlLineInfo)child).LineNumber.ToString());
-                                continue;
-                        }
-                    }
+                    ParseModConfig(mod, xml.XmlDoc.Root);
                 }
                 catch (DirectoryNotFoundException)
                 {
@@ -98,7 +74,8 @@ namespace OCBNET
             LoadOrder.RemoveAll(mod => !IsModEnabled(mod));
             // Re-sort for load order
             LoadOrder.Sort(delegate (Mod a, Mod b) {
-                return HasDependency(a, b) ? -1 :
+                return HasDependency(a, b) ? 1 :
+                       HasDependency(b, a) ? -1 :
                     a.FolderName.CompareTo(b.FolderName);
             });
             // Enable debug for now to check it if needed
@@ -106,15 +83,13 @@ namespace OCBNET
             {
                 Log.Out("Load XML in the following order:");
                 foreach (Mod mod in LoadOrder)
-                {
-                    Log.Out("  {0}", mod.ModInfo.Name.Value);
-                }
+                    Log.Out("  {0}", mod.Name);
             }
         }
 
         public bool IsModEnabled(Mod mod)
         {
-            string name = mod.ModInfo.Name.Value;
+            string name = mod.Name;
             if (Conditions.TryGetValue(name, out var conditions))
             {
                 foreach (string condition in conditions.list)
@@ -126,9 +101,9 @@ namespace OCBNET
             return true;
         }
 
-        private void ParseModConfig(Mod mod, PositionXmlElement node)
+        private void ParseModConfig(Mod mod, XElement node)
         {
-            foreach (XmlNode child in node.ChildNodes)
+            foreach (XElement child in node.Elements())
             {
 
                 string op = null;
@@ -139,22 +114,22 @@ namespace OCBNET
                 switch (child.NodeType)
                 {
                     case XmlNodeType.Element:
-                        switch (child.Name)
+                        switch (child.Name.LocalName)
                         {
                             case "Assert":
-                                foreach (XmlAttribute attr in child.Attributes)
+                                foreach (XAttribute attr in child.Attributes())
                                 {
                                     if (attr.Name != "condition")
                                     {
                                         Log.Warning(string.Format("Unknown attribute found: {0} (file {1}, line {2})",
-                                            attr.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                                            attr.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                                     }
                                     else
                                     {
                                         if (!ModConditions.Evaluate(attr.Value))
                                         {
                                             Log.Error("Assertion '{0}' failed for {1}",
-                                                attr.Value, mod.ModInfo.Name.Value);
+                                                attr.Value, mod.Name);
                                             Log.Warning("Something with installed mods is wrong!");
                                         }
                                     }
@@ -162,17 +137,17 @@ namespace OCBNET
                                 continue;
                             case "Require":
                             case "After":
-                                foreach (XmlAttribute attr in child.Attributes)
+                                foreach (XAttribute attr in child.Attributes())
                                 {
-                                    if (attr.Name != "mod")
+                                    if (attr.Name.LocalName != "mod")
                                     {
                                         Log.Warning(string.Format("Unknown attribute found: {0} (file {1}, line {2})",
                                             attr.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                                     }
-                                    else if (child.Name == "Require" && ModManager.GetMod(attr.Value) == null)
+                                    else if (child.Name.LocalName == "Require" && ModManager.GetMod(attr.Value) == null)
                                     {
                                         Log.Error("Required mod {0} for {1} not loaded",
-                                            attr.Value, mod.ModInfo.Name.Value);
+                                            attr.Value, mod.Name);
                                         // throw new Exception("Required mod not loaded");
                                     }
                                     else
@@ -182,41 +157,41 @@ namespace OCBNET
                                 }
                                 continue;
                             case "Config":
-                                foreach (XmlAttribute attr in child.Attributes)
+                                foreach (XAttribute attr in child.Attributes())
                                 {
-                                    if (attr.Name == "name")
+                                    if (attr.Name.LocalName == "name")
                                     {
                                         if (name != null)
                                         {
                                             Log.Warning(string.Format("Name attribute given twice: {0} (file {1}, line {2})",
-                                                child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                                                child.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                                         }
                                         name = attr.Value;
                                     }
-                                    else if (attr.Name == "value")
+                                    else if (attr.Name.LocalName == "value")
                                     {
                                         if (value != null)
                                         {
                                             Log.Warning(string.Format("Value attribute given twice: {0} (file {1}, line {2})",
-                                                child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                                                child.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                                         }
                                         value = attr.Value;
                                     }
                                     else
                                     {
                                         Log.Warning(string.Format("Unknown attribute found: {0} (file {1}, line {2})",
-                                            attr.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                                            attr.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                                     }
                                 }
                                 if (name == null)
                                 {
                                     Log.Warning(string.Format("Config is missing name attribute: {0} (file {1}, line {2})",
-                                        child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                                        child.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                                 }
                                 else if (value == null)
                                 {
                                     Log.Warning(string.Format("Config is missing value attribute: {0} (file {1}, line {2})",
-                                        child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                                        child.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                                 }
                                 else
                                 {
@@ -224,41 +199,41 @@ namespace OCBNET
                                 }
                                 continue;
                             case "ConfigOp":
-                                foreach (XmlAttribute attr in child.Attributes)
+                                foreach (XAttribute attr in child.Attributes())
                                 {
-                                    if (attr.Name == "op")
+                                    if (attr.Name.LocalName == "op")
                                     {
                                         if (op != null)
                                         {
                                             Log.Warning(string.Format("Op attribute given twice: {0} (file {1}, line {2})",
-                                                child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                                                child.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                                         }
                                         op = attr.Value;
                                     }
-                                    else if (attr.Name == "name")
+                                    else if (attr.Name.LocalName == "name")
                                     {
                                         if (name != null)
                                         {
                                             Log.Warning(string.Format("Name attribute given twice: {0} (file {1}, line {2})",
-                                                child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                                                child.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                                         }
                                         name = attr.Value;
                                     }
-                                    else if (attr.Name == "key")
+                                    else if (attr.Name.LocalName == "key")
                                     {
                                         if (key != null)
                                         {
                                             Log.Warning(string.Format("Key attribute given twice: {0} (file {1}, line {2})",
-                                                child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                                                child.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                                         }
                                         key = attr.Value;
                                     }
-                                    else if (attr.Name == "value")
+                                    else if (attr.Name.LocalName == "value")
                                     {
                                         if (value != null)
                                         {
                                             Log.Warning(string.Format("Value attribute given twice: {0} (file {1}, line {2})",
-                                                child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                                                child.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                                         }
                                         value = attr.Value;
                                     }
@@ -271,22 +246,22 @@ namespace OCBNET
                                 if (op == null)
                                 {
                                     Log.Warning(string.Format("Config is missing op attribute: {0} (file {1}, line {2})",
-                                        child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                                        child.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                                 }
                                 else if (name == null)
                                 {
                                     Log.Warning(string.Format("Config is missing name attribute: {0} (file {1}, line {2})",
-                                        child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                                        child.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                                 }
                                 else if (key == null)
                                 {
                                     Log.Warning(string.Format("Config is missing key attribute: {0} (file {1}, line {2})",
-                                        child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                                        child.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                                 }
                                 else if (value == null)
                                 {
                                     Log.Warning(string.Format("Config is missing value attribute: {0} (file {1}, line {2})",
-                                        child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                                        child.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                                 }
                                 else
                                 {
@@ -315,50 +290,50 @@ namespace OCBNET
             }
         }
 
-        private void ParseModConfigEnum(XmlNode child)
+        private void ParseModConfigEnum(XElement child)
         {
             string type = null;
             string name = null;
             bool bitwise = false;
-            foreach (XmlAttribute attr in child.Attributes)
+            foreach (XAttribute attr in child.Attributes())
             {
-                if (attr.Name == "name")
+                if (attr.Name.LocalName == "name")
                 {
                     if (name != null)
                     {
                         Log.Warning(string.Format("Name attribute given twice: {0} (file {1}, line {2})",
-                            child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                            child.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                     }
                     name = attr.Value;
                 }
-                else if (attr.Name == "type")
+                else if (attr.Name.LocalName == "type")
                 {
                     if (type != null)
                     {
                         Log.Warning(string.Format("Type attribute given twice: {0} (file {1}, line {2})",
-                            child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                            child.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                     }
                     type = attr.Value;
                 }
-                else if (attr.Name == "bitwise")
+                else if (attr.Name.LocalName == "bitwise")
                 {
                     bitwise = bool.Parse(attr.Value);
                 }
                 else
                 {
                     Log.Warning(string.Format("Unknown attribute found: {0} (file {1}, line {2})",
-                        attr.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                        attr.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                 }
             }
             if (name == null)
             {
                 Log.Warning(string.Format("Config is missing name attribute: {0} (file {1}, line {2})",
-                    child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                    child.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
             }
             else if (type == null)
             {
                 Log.Warning(string.Format("Config is missing type attribute: {0} (file {1}, line {2})",
-                    child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                    child.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
             }
             else
             {
@@ -366,34 +341,34 @@ namespace OCBNET
             }
         }
 
-        private void ParseModCondition(Mod mod, XmlNode child)
+        private void ParseModCondition(Mod mod, XElement child)
         {
             string condition = null;
-            foreach (XmlAttribute attr in child.Attributes)
+            foreach (XAttribute attr in child.Attributes())
             {
-                if (attr.Name == "condition")
+                if (attr.Name.LocalName == "condition")
                 {
                     if (condition != null)
                     {
                         Log.Warning(string.Format("Condition attribute given twice: {0} (file {1}, line {2})",
-                            child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                            child.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                     }
                     condition = attr.Value;
                 }
                 else
                 {
                     Log.Warning(string.Format("Unknown attribute found: {0} (file {1}, line {2})",
-                        attr.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                        attr.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                 }
             }
             if (condition == null)
             {
                 Log.Warning(string.Format("Config is missing condition attribute: {0} (file {1}, line {2})",
-                    child.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                    child.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
             }
             else
             {
-                string name = mod.ModInfo.Name.Value;
+                string name = mod.Name;
                 if (!Conditions.TryGetValue(name, out var set))
                     set = new HashSetList<string>();
                 Conditions[name] = set;
@@ -403,7 +378,7 @@ namespace OCBNET
 
         private void AddDependency(Mod mod, string value)
         {
-            string name = mod.ModInfo.Name.Value;
+            string name = mod.Name;
             if (!Dependecies.TryGetValue(name, out HashSetList<string> deps))
             {
                 deps = new HashSetList<string>();
@@ -435,8 +410,7 @@ namespace OCBNET
         public bool HasDependency(Mod mod, Mod dep)
         {
             return HasDependency(
-                mod.ModInfo.Name.Value,
-                dep.ModInfo.Name.Value);
+                mod.Name, dep.Name);
         }
 
         public HashSetList<string> GetDependencies(string mod)

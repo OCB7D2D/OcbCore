@@ -127,7 +127,8 @@ class ModConditions
                 if (ModManager.GetMod(name) is Mod mod)
                 {
                     string version = condition.Substring(notpos + length + off);
-                    Version having = Version.Parse(mod.ModInfo?.Version?.Value?.Trim());
+                    // Version having = Version.Parse(mod.ModInfo?.Version?.Value?.Trim());
+                    Version having = mod.Version;
                     Version testing = Version.Parse(version.Trim());
                     if (ltpos != -1) result = having < testing;
                     if (gtpos != -1) result = having > testing;

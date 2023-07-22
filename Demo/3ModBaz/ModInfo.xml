@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <xml>
-	<ModInfo>
-		<Name value="ModBaz" />
-		<Description value="Mod Baz" />
-		<Website value="https://github.com/OCB7D2D/OcbCore" />
-		<Author value="ocbMaurice" />
-		<Version value="0.0.0" compat="A20"/>
-	</ModInfo>
+	<Name value="ModBaz"/>
+	<DisplayName value="Mod Baz"/>
+	<Description value="Mod Baz - OCB Core Demo"/>
+	<Website value="https://github.com/OCB7D2D/OcbCore"/>
+	<Author value="ocbMaurice"/>
+	<Version value="0.0.0"/>
 </xml>

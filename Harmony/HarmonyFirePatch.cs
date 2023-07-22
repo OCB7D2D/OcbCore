@@ -21,7 +21,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using HarmonyLib;
 using OCBNET;
-using System;
 
 class HarmonyFirePatch
 {

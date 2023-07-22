@@ -1,8 +1,12 @@
-﻿# OCB Core Mod - 7 Days to Die (A20) Addon
+﻿# OCB Core Mod - 7 Days to Die (A21) Addon
 
 This Core Mod is only meant as a POC and WIP project to kick-start
 a community discussion to adapt something similar, or to build up on.
 It should not be used in any project yet, since anything may change.
+
+Note: You must rename this mod to e.g. `0cbCore` to load it first!  
+Otherwise it cannot influence Harmony Patching for mod loaded before.  
+It will still apply correct load order for XML loaded when game starts.
 
 [![GitHub CI Compile Status][3]][2]
 
@@ -112,11 +116,11 @@ XML files. Also works on servers, since it sends the final results.
         <include path="recipes.ulm.xml"/>
     </modif>
     <modelsif condition="Darkness Falls Core">
-        <include path="recipes.a20.xml"/>
+        <include path="recipes.a21.xml"/>
         <include path="recipes.df.xml"/>
     </modelsif>
     <modelse>
-        <include path="recipes.a20.xml"/>
+        <include path="recipes.a21.xml"/>
     </modelse>
 </configs>
 ```
@@ -241,7 +245,7 @@ the Core Mod on the client will check and enforce.
 
 ## Download and Install
 
-Simply [download here from GitHub][1] and put into your A20 Mods folder:
+Simply [download here from GitHub][1] and put into your A21 Mods folder:
 
 - https://github.com/OCB7D2D/OcbCore/releases (master branch)
 
@@ -253,7 +257,7 @@ Simply [download here from GitHub][1] and put into your A20 Mods folder:
 
 ## Compatibility
 
-I've developed and tested this Mod against version a20.6 (b8).
+Developed initially for version a20.6(b8), updated through A21.1(b6).
 
 [1]: https://github.com/OCB7D2D/OcbCore/releases
 [2]: https://github.com/OCB7D2D/OcbCore/actions/workflows/ci.yml

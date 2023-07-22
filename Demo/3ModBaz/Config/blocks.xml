@@ -1,0 +1,3 @@
+<config patcher-version="4">
+	<echo warn="LOADED MOD BAZ (was 3rd, should be 3rd)"/>
+</config>

@@ -21,6 +21,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using HarmonyLib;
 using OCBNET;
+using Platform;
 using System;
 using System.Collections.Generic;
 
@@ -44,7 +45,7 @@ public class CustomGamePref
     // Not sure if we need an explicit constructor with some defaults?
     public struct CustomPrefCfg
     {
-        public bool persist;
+        public DeviceFlag persist;
         public string name;
         public object def;
         public int prop;
@@ -63,7 +64,7 @@ public class CustomGamePref
         var prop = CurrentPropIdx++;
         var dict = Utilities.ParseKeyValueList(cfg);
         CustomPrefCfg pref;
-        pref.persist = true;
+        pref.persist = DeviceFlag.None;
         pref.idx = (EnumGamePrefs)idx;
         pref.prop = prop;
         pref.name = dict["name"];

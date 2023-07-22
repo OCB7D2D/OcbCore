@@ -19,12 +19,11 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-using System.Reflection;
 using HarmonyLib;
 using OCBNET;
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Reflection;
 
 public class OcbCore : IModApi
 {
@@ -35,48 +34,6 @@ public class OcbCore : IModApi
         HarmonyFieldProxy<DictionaryList<string, Mod>>(typeof(ModManager), "loadedMods");
 
     static Mod LastModToLoad = null;
-
-    // Patch Init code for every mod to be loaded
-    // Defer loading if we are waiting for last mod
-    // This patch is applied programmatically only!
-    static public bool PrefixModInit(Mod mod)
-    {
-        if (LastModToLoad == null) return true;
-        InitLater.Add(mod);
-        if (LastModToLoad == mod)
-        {
-            LastModToLoad = null;
-            var cfg = ModConfigs.Instance;
-            Log.Out("Detected Last Mod, loading deferred mods in order now");
-            Log.Out("Resorting mod list to load mod by their dependencies");
-            // Remove mods which that fail their conditions
-            InitLater.RemoveAll(entry => !cfg.IsModEnabled(entry));
-            // Sort by dependencies or keep alphanumeric order
-            InitLater.Sort(delegate (Mod a, Mod b) {
-                return cfg.HasDependency(b, a) ? -1 :
-                    a.FolderName.CompareTo(b.FolderName);
-            });
-            foreach (Mod load in InitLater)
-            {
-                if (load.ApiInstance != null)
-                {
-                    try
-                    {
-                        load.ApiInstance.InitMod(load);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error("[MODS] Failed initializing ModAPI instance on mod {0} from DLL {1}",
-                            load.ModInfo.Name.Value, Path.GetFileName(load.MainAssembly.Location));
-                        Log.Exception(ex);
-                    }
-                }
-
-            }
-        }
-
-        return false;
-    }
 
     public void InitMod(Mod mod)
     {
@@ -101,39 +58,67 @@ public class OcbCore : IModApi
         // Load additional config file for dedicated server to provide default values
         if (GameManager.IsDedicatedServer) CustomGamePrefDedi.ApplyCustomServerConfig();
 
-        // Fetch the harmony prefix we want to apply to all future mods
-        // Didn't find a way to do it statically, so we do it that way
-        // You can find that function above: `bool PrefixModInit(Mod mod)`
-        if (GetType().GetMethod("PrefixModInit") is MethodInfo fn)
+        // Find last mod loading with regular load order
+        // We will receive and queue all until this one
+        var mods = ModManager.GetLoadedMods();
+        // Should not happen since we exist!?
+        if (mods.Count == 0) return;
+        LastModToLoad = mods[mods.Count - 1];
+    }
+
+    // Hook into `InitModCode` to delay the actual patching
+    // Wait until last mod to re-sort and apply in correct order
+    [HarmonyPatch(typeof(Mod))]
+    [HarmonyPatch("InitModCode")]
+    public class ModManager_InitModCode
+    {
+        static bool Prefix(Mod __instance)
         {
-            // Original code also uses `dict`
-            // Shouldn't it be a sorted list?
-            // We basically replace the original loop
-            // This time with correct dependency order
-            foreach (var kv in LoadedMods.Get(null)?.dict)
+            var mod = __instance;
+            if (LastModToLoad == null) return true;
+            InitLater.Add(mod);
+            if (LastModToLoad == mod)
             {
-                if (kv.Value == mod) continue; // Do not patch ourself ;)
-                if (kv.Value?.ApiInstance == null) continue; // Play safe
-                // Get the "InitMod" function of the 3rd party mod
-                // We will patch it so we can gather all future mods
-                // Once we give control back to vanilla it will continue to
-                // call all other mod's "InitMod", but by then we have already
-                // patched them all. We also register here which will be the last
-                // mod to load, since on that one, we can start to apply dependency
-                // ordering and execute the actual "InitMod" calls. Those will then
-                // apply their own harmony mods as with vanilla (just in correct oder).
-                var rv = AccessTools.Method(kv.Value.ApiInstance.GetType(), "InitMod");
-                if (rv == null) continue;
-                var patcher = harmony.CreateProcessor(rv);
-                if (patcher == null) continue;
-                // Doing harmony patching programmatically
-                patcher.AddPrefix(fn);
-                patcher.Patch();
-                // Update last mod to load
-                // Last one standing is the one
-                LastModToLoad = kv.Value;
+                LastModToLoad = null;
+                var cfg = ModConfigs.Instance;
+                Log.Out("=====================================================");
+                Log.Out("Detected Last Mod, loading deferred mods in order now");
+                Log.Out("Resorting mod list to load mod by their dependencies");
+                Log.Out("=====================================================");
+                // Remove mods that failed their conditions
+                InitLater.RemoveAll(entry => !cfg.IsModEnabled(entry));
+                // Sort by dependencies or keep alphanumeric order
+                InitLater.Sort(delegate (Mod a, Mod b) {
+                    return cfg.HasDependency(a, b) ? 1 :
+                          cfg.HasDependency(b, a) ? -1 :
+                        a.FolderName.CompareTo(b.FolderName);
+                });
+                // Enable debug for now to check it if needed
+                if (cfg.DebugLoadOrder)
+                {
+                    Log.Out("Load Mods in the following order:");
+                    foreach (Mod load in InitLater)
+                        Log.Out("  {0}", load.Name);
+                }
+                // Load all mods now in new order
+                foreach (Mod load in InitLater)
+                {
+                    try
+                    {
+                        load.InitModCode();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error("[MODS] Failed initializing ModAPI instance on mod {0} from DLL {1}",
+                            load.Name, System.IO.Path.GetFileName(load.AllAssemblies[0].Location));
+                        Log.Exception(ex);
+                    }
+                }
             }
+
+            return false;
         }
+
     }
 
     // Patching `GetLoadedMods` is all it takes to overload
