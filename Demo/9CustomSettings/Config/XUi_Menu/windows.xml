@@ -1,4 +1,4 @@
-<configs patcher-version="2">
+<configs patcher-version="ocb-core-test">
 	<modif condition="HasAnyConfig(GamePrefs)">
 		<include path="windows.a20.xml"/>
 	</modif>

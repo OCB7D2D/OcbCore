@@ -45,6 +45,11 @@ public class OcbCore : IModApi
         // Gather static configs across all mods
         // ToDo: load order not enforced here yet
         var modcfg = ModConfigs.Instance;
+
+        // This is basically the main implementation for custom game prefs
+        // Call could be in any other mod, and doesn't need to be in the core
+        CustomGamePref.AddAll(modcfg.GetConfigs("GamePrefs")?.list);
+
         // Create harmony patcher like you'd always do
         Harmony harmony = new Harmony(GetType().ToString());
         // This would be the regular call to harmony to apply patches
@@ -52,9 +57,6 @@ public class OcbCore : IModApi
         // If your mod uses `HarmonyCondition` you need to use this call
         HarmonyCondition.PatchAll(harmony, Assembly.GetExecutingAssembly());
 
-        // This is basically the main implementation for custom game prefs
-        // Call could be in any other mod, and doesn't need to be in the core
-        CustomGamePref.AddAll(modcfg.GetConfigs("GamePrefs")?.list);
         // Load additional config file for dedicated server to provide default values
         if (GameManager.IsDedicatedServer) CustomGamePrefDedi.ApplyCustomServerConfig();
 

@@ -23,12 +23,14 @@ SOFTWARE.
 */
 
 using HarmonyLib;
+using OCBNET;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -150,7 +152,7 @@ static class ModXmlPatcher
         foreach (XAttribute attr in element.Attributes())
         {
             // Skip unknown attributes
-            if (attr.Name != "path") continue;
+            if (attr.Name.LocalName != "path") continue;
             // Load path relative to previous XML include
             string prev = Path.Combine(parent.Directory, parent.Filename);
             string path = Path.Combine(Path.GetDirectoryName(prev), attr.Value);
@@ -220,10 +222,10 @@ static class ModXmlPatcher
                     // Log.Out(System.Environment.StackTrace);
                     foreach (XAttribute attr in child.Attributes())
                     {
-                        if (attr.Name == "log") Log.Out("{1}: {0}", attr.Value, xmlFile.Filename);
-                        if (attr.Name == "warn") Log.Warning("{1}: {0}", attr.Value, xmlFile.Filename);
-                        if (attr.Name == "error") Log.Error("{1}: {0}", attr.Value, xmlFile.Filename);
-                        if (attr.Name != "log" && attr.Name != "warn" && attr.Name != "error")
+                        if (attr.Name.LocalName == "log") Log.Out("{1}: {0}", attr.Value, xmlFile.Filename);
+                        if (attr.Name.LocalName == "warn") Log.Warning("{1}: {0}", attr.Value, xmlFile.Filename);
+                        if (attr.Name.LocalName == "error") Log.Error("{1}: {0}", attr.Value, xmlFile.Filename);
+                        if (attr.Name.LocalName != "log" && attr.Name.LocalName != "warn" && attr.Name.LocalName != "error")
                             Log.Warning("Echo has no valid name (log, warn or error)");
                     }
                 }
@@ -246,6 +248,24 @@ static class ModXmlPatcher
         public int count;
         public bool IfClauseParsed;
         public bool PreviousResult;
+    }
+
+    public static string EvaluateTemplate(Match match, int i, Dictionary<string, string> cfg)
+    {
+        if (match.Groups.Count < 2) return match.Value;
+        string str = match.Groups[1].Value.Trim();
+        if (str.StartsWith("Mul(") && str.EndsWith(")"))
+        {
+            int multiplier = int.Parse(str.Substring(4, str.Length - 5));
+            return (multiplier * i).ToString();
+        }
+        else if (str.StartsWith("Val(") && str.EndsWith(")"))
+        {
+            string name = str.Substring(4, str.Length - 5);
+            if (cfg.TryGetValue(name, out string value)) return value;
+            return string.Empty; // Value should always be replaced
+        }
+        return match.Value;
     }
 
     // Entry point instead of (private) `XmlPatcher.singlePatch`
@@ -273,13 +293,13 @@ static class ModXmlPatcher
                 foreach (XAttribute attr in _patchElement.Attributes())
                 {
                     // Ignore unknown attributes for now
-                    if (attr.Name != "condition")
+                    if (attr.Name.LocalName != "condition")
                     {
-                        Log.Warning("Ignoring unknown attribute {0}", attr.Name);
+                        Log.Warning("Ignoring unknown attribute {0}", attr.Name.LocalName);
                         continue;
                     }
                     // Evaluate one or'ed condition
-                    if (EvaluateConditions(attr.Value, _xmlFile))
+                    if (ModConditions.Evaluate(attr.Value))
                     {
                         stack.PreviousResult = true;
                         return PatchXml(_xmlFile, _patchXml,
@@ -306,13 +326,13 @@ static class ModXmlPatcher
                 foreach (XAttribute attr in _patchElement.Attributes())
                 {
                     // Ignore unknown attributes for now
-                    if (attr.Name != "condition")
+                    if (attr.Name.LocalName != "condition")
                     {
-                        Log.Warning("Ignoring unknown attribute {0}", attr.Name);
+                        Log.Warning("Ignoring unknown attribute {0}", attr.Name.LocalName);
                         continue;
                     }
                     // Evaluate one or'ed condition
-                    if (EvaluateConditions(attr.Value, _xmlFile))
+                    if (ModConditions.Evaluate(attr.Value))
                     {
                         stack.PreviousResult = true;
                         return PatchXml(_xmlFile, _patchXml,
@@ -332,6 +352,77 @@ static class ModXmlPatcher
                 return PatchXml(_xmlFile, _patchXml,
                     _patchElement, _patchName);
 
+            case "foreach":
+
+                string template = "<xml>";
+
+                // Check if we have true conditions
+                foreach (var node in _patchElement.Nodes())
+                {
+                    if (node is XCData data)
+                    {
+                        if (!string.IsNullOrEmpty(template))
+                            template += " "; // Add space between
+                        template += data.Value;
+                    }
+                    else
+                    {
+                        Log.Error("foreach must only contain CDATA nodes", node);
+                    }
+                }
+
+                string ConfigName = null;
+
+                // Check if we have true conditions
+                foreach (var attr in _patchElement.Attributes())
+                {
+                    // Ignore unknown attributes for now
+                    if (attr.Name.LocalName == "config")
+                    {
+                        ConfigName = attr.Value;
+                    }
+                }
+
+                if (ConfigName == null)
+                {
+                    Log.Error("Foreach must name a config");
+                    return false;
+                }
+
+                var cfgs = ModConfigs.Instance.GetConfigs(ConfigName);
+
+                if (cfgs == null)
+                {
+                    return true;
+                }
+
+                template += "</xml>";
+
+                string pattern = @"{{([^\}]+)}}";
+                bool rv = true;
+
+                for (int it = 0; it < cfgs.list.Count; it++)
+                {
+                    string qwe = cfgs.list[it];
+                    var cfg = ParseKeyValueList(cfgs.list[it]);
+                    var evaluated = Regex.Replace(template, pattern,
+                            match => EvaluateTemplate(match, it, cfg));
+                    Log.Out("APPEND {0}", evaluated);
+
+                    XmlFile xml = new XmlFile(
+                        evaluated,
+                        _xmlFile.Directory,
+                        _xmlFile.Filename);
+                    rv &= PatchXml(_xmlFile, _patchXml,
+                        xml.XmlDoc.Root,
+                        _patchName);
+                    Log.Out("PAtched {0}", rv);
+                }
+
+
+                return rv;
+
+
             default:
                 // Reset flags first
                 stack.IfClauseParsed = false;
@@ -342,7 +433,21 @@ static class ModXmlPatcher
         }
     }
 
+    private static Dictionary<string, string> ParseKeyValueList(string cfg)
+    {
+        var props = new Dictionary<string, string>();
+        foreach (var kv in cfg.Split(';'))
+        {
+            var kvpair = kv.Trim();
+            if (string.IsNullOrEmpty(kvpair)) continue;
+            var parts = kvpair.Split(new char[] { '=' }, 2);
+            props[parts[0]] = parts.Length == 2 ? parts[1] : null;
+        }
+        return props;
+    }
+
     // Hook into vanilla XML Patcher
+    [HarmonyCondition("HasConfig(OcbCore;XmlPatcher)")]
     [HarmonyPatch(typeof(XmlPatcher))]
     [HarmonyPatch("PatchXml")]
     public class XmlPatcher_PatchXml
@@ -368,7 +473,7 @@ static class ModXmlPatcher
             if (!string.IsNullOrEmpty(version))
             {
                 // Check if version is too new for us
-                if (int.Parse(version) > 4) return true;
+                if (version != "ocb-core-test") return true;
             }
             // Call out to static helper function
             __result = PatchXml(

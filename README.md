@@ -111,7 +111,7 @@ on the main level) and, for easier management, to include additional
 XML files. Also works on servers, since it sends the final results.
 
 ```xml
-<configs patcher-version="2">
+<configs patcher-version="4">
     <modif condition="UndeadLegacy_CoreModule">
         <include path="recipes.ulm.xml"/>
     </modif>

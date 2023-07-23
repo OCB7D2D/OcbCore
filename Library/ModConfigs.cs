@@ -119,7 +119,7 @@ namespace OCBNET
                             case "Assert":
                                 foreach (XAttribute attr in child.Attributes())
                                 {
-                                    if (attr.Name != "condition")
+                                    if (attr.Name.LocalName != "condition")
                                     {
                                         Log.Warning(string.Format("Unknown attribute found: {0} (file {1}, line {2})",
                                             attr.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
@@ -142,7 +142,7 @@ namespace OCBNET
                                     if (attr.Name.LocalName != "mod")
                                     {
                                         Log.Warning(string.Format("Unknown attribute found: {0} (file {1}, line {2})",
-                                            attr.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                                            attr.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                                     }
                                     else if (child.Name.LocalName == "Require" && ModManager.GetMod(attr.Value) == null)
                                     {
@@ -240,7 +240,7 @@ namespace OCBNET
                                     else
                                     {
                                         Log.Warning(string.Format("Unknown attribute found: {0} (file {1}, line {2})",
-                                            attr.Name, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
+                                            attr.Name.LocalName, "ModConfig.xml", ((IXmlLineInfo)child).LineNumber));
                                     }
                                 }
                                 if (op == null)

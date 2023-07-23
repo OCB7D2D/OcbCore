@@ -2,7 +2,7 @@
 <xml>
 	<Require mod="CustomSettings"/>
 	<Condition condition="HasConfig(OcbCore;Fire)"/>
-	<Enum type="QuestTags" name="MyNewQuestTag" bitwise="True"/>
+	<!-- <Enum type="QuestTags" name="MyNewQuestTag" bitwise="True"/> -->
 	<Config name="GamePrefs" value="name=LoadVanillaMap;type=Bool;default=true;prefix=xuiComboOnOff"/>
 	<Config name="GamePrefs" value="name=OtherGamePref;type=Int;default=50;values=25,50,75,100,125,150,175,200,300;prefix=goBlockDamageValue"/>
 	<Config name="GamePrefs" value="name=EvenMoreStuff;type=Bool;default=true"/>

@@ -9,9 +9,11 @@ public class UseSettings : IModApi
         Log.Out(" Loading Patch: " + GetType().ToString());
         Log.Warning(" Trying to Parse New GamePref");
         EnumGamePrefs pref_a = EnumUtils.Parse<EnumGamePrefs>("LoadVanillaMap", false);
-        EnumGamePrefs pref_b = EnumUtils.Parse<EnumGamePrefs>("LoADVaniLlaMaP", true);
-        Log.Out(" Results: {0} => {1}", (int)pref_a, pref_b);
-        Log.Out(" Results: {0} => {1}", (int)pref_a, pref_b);
+        EnumGamePrefs pref_b = EnumUtils.Parse<EnumGamePrefs>("OtherGamePref", true);
+        EnumGamePrefs pref_c = EnumUtils.Parse<EnumGamePrefs>("Last", true);
+        Log.Out(" First: {0} => {1}", (int)pref_a, pref_a.ToString());
+        Log.Out(" Other: {0} => {1}", (int)pref_b, pref_b);
+        Log.Out(" Last: {0} => {1}", (int)pref_c, pref_c);
         var harmony = new Harmony(GetType().ToString());
         HarmonyCondition.PatchAll(harmony, Assembly.GetExecutingAssembly());
     }
